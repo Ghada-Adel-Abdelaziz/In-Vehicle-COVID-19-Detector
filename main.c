@@ -28,6 +28,7 @@ SOFTWARE.
 */
 
 /* Includes */
+#include "GPIO_cfg.h"
 #include "stm32f4xxx.h"
 
 /* Private macro */
@@ -38,6 +39,8 @@ SOFTWARE.
 
 //#include "stm32f4xx.h"
 
+
+#include "GPIO_lcfg.h"
 #include "GPIO.h"
 
 /**
@@ -50,15 +53,16 @@ SOFTWARE.
 int main(void)
 {
   int i = 0;
-
-  GPIO_pinconfig_t GPIOA_Pin_Config = {0,0,0,0,0,0};   // pin num, pin_mode, pin_speed, pushpull,output type, alternate fun
-
-  GPIO_Init( GPIOA_ , GPIOA_Pin_Config);
-
-
-
+  GPIO_Init();
   while (1)
   {
-	i++;
+		GPIO_WriteOutputPin(LED2 , GPIO_PIN_SET);
+
+		for(i=0; i<4000000; i++);
+
+		GPIO_WriteOutputPin(LED2 , GPIO_PIN_RESET);
+
+		for(i=0; i<4000000; i++);
+
   }
 }
