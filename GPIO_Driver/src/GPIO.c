@@ -54,12 +54,6 @@
 
 // new
 
-GPIO_pinconfig_t GPIO_PinConfigArray[NUMBER_OF_CONFIGURED_PINS] =
-{
-		//	{GPIO_CHANNEL_A0,GPIO_MODE_OUT,GPIO_SPEED_MEDIUM,GPIO_NO_PUPD,GPIO_TYPE_PP,0},
-		//	{GPIO_CHANNEL_B0,GPIO_MODE_OUT,GPIO_SPEED_MEDIUM,GPIO_NO_PUPD,GPIO_TYPE_PP,0},
-		{GPIO_CHANNEL_A8,GPIO_MODE_OUT,GPIO_SPEED_MEDIUM,GPIO_NO_PUPD,GPIO_TYPE_PP,0}
-};
 /************************************************************ NEW ************************************/
 GPIO_regdef_t *GPIO_Arr[NUM_OF_GPIO] = {GPIOA,GPIOB,GPIOC,GPIOD,GPIOE,GPIOF,GPIOG,GPIOH,GPIOI};
 /*****************************************************************************************************/
