@@ -73,11 +73,11 @@ static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnorDi);
 //void GPIO_PeriClockControl(GPIO_regdef_t *pGPIOx,uint8_t EnorDi)
 static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnCLK)
 {
-//	GPIO_PCLK_EN &=~ (One_bit_shift << PORT_num);
-//	GPIO_PCLK_EN |= (EnCLK << PORT_num);
+	//	GPIO_PCLK_EN &=~ (One_bit_shift << PORT_num);
+	//	GPIO_PCLK_EN |= (EnCLK << PORT_num);
 
 	GPIO_PCLK_EN =(GPIO_PCLK_EN & ~(One_bit_shift << PORT_num))
-			|(EnCLK << PORT_num);
+					|(EnCLK << PORT_num);
 }
 
 /*init and De-init
@@ -200,17 +200,10 @@ Note       =
 //void GPIO_DeInit(GPIO_regdef_t *pGPIOx)
 void GPIO_RESET(uint8_t PORT_num)
 {
-	char i=0;
-	for(i; i< NUM_OF_GPIO; i++)         // new
-	{
-		if( i == PORT_num )
-		{
-			GPIO_RESET_REG |= (One_bit_shift << PORT_num);
-			GPIO_RESET_REG &= ~(One_bit_mask << PORT_num);
+	GPIO_RESET_REG |= (One_bit_shift << PORT_num);
+	GPIO_RESET_REG &= ~(One_bit_mask << PORT_num);
 
-			return;
-		}
-	}
+	return;
 
 }
 
