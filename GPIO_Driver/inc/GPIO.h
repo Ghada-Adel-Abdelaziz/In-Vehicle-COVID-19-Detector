@@ -11,7 +11,7 @@
 
 /* GPIO Pre-Compile Configuration Header file */
 #include "GPIO_cfg.h"
-#include "stm32f4xxx.h"
+#include "stm32f4xxx.h"//HA 10/1/2020: To be removed
 
 //configuration structure for GPIO
 

@@ -99,7 +99,7 @@ void GPIO_Init(void)
 	{
 		PortNumber = ( GPIO_PinConfigArray[counter].GPIO_PinNumber) / PORT_NUMBER_OF_BITS_IN_REG;
 		PinActualNumber = (GPIO_PinConfigArray[counter].GPIO_PinNumber) % PORT_NUMBER_OF_BITS_IN_REG;
-		uint32_t temp = 0;  //temp register
+		uint32_t temp = 0;  //temp register ////HA 10/1/2020: to be moved to the begining of the function
 		//enable the peripheral clock
 		GPIO_PeriClockControl(PortNumber, ENABLE);
 		GPIO_regdef_t *pGPIOx = GPIO_Arr[PortNumber];
@@ -137,7 +137,7 @@ void GPIO_Init(void)
 			}
 
 			//configure the GPIO port selection in SYSCFG_EXTICR
-			uint8_t temp1 = PinActualNumber / Four_Pins_for_SYSCFG_EXTICR;
+			uint8_t temp1 = PinActualNumber / Four_Pins_for_SYSCFG_EXTICR;//HA 10/1/2020: all variables to be declared at the begining of the function
 			uint8_t temp2 = PinActualNumber % Four_Pins_for_SYSCFG_EXTICR;
 			uint8_t portcode = GPIO_BASEADDR_TO_CODE(pGPIOx);
 			SYSCFG->EXTICR[temp1] = portcode << (temp2 * Four_bits_shift);
@@ -197,7 +197,7 @@ void GPIO_RESET(uint8_t PORT_num)
 	GPIO_RESET_REG |= (One_bit_shift << PORT_num);
 	GPIO_RESET_REG &= ~(One_bit_mask << PORT_num);
 
-	return;
+	return;//HA 10/1/2020: no return for void function
 
 }
 
@@ -335,7 +335,7 @@ return     -
 Note       =
  */
 
-void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)
+void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)//HA 10/1/2020: too complex. need to be simplified
 {
 	if(EnorDi == ENABLE)
 	{
