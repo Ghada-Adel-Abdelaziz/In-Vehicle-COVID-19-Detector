@@ -2,34 +2,18 @@
  * stm32f407xx_uartdriver.c
  *
  *  Created on: 17-JAN-2021
- *      Author: TOQA&GHADA
+ *      Author: TOQA & GHADA
  */
 
 /*
  * Handle structure for USARTx peripheral
  */
 
-//#include "Common_Macros.h"
+#include "Common_Macros.h"
 #include "UART_Driver.h"
 #include "UART_Cfg.h"
 #include "UART_Lcfg.h"
 
-
-
-// descriptive macros for magic numbers
-#define One_bit_shift                        1
-#define Two_bits_shift                       2
-#define Four_bits_shift                      4
-#define Eight_Pins_for_GPIOxAFRH_or_AFRL     8
-#define Four_Pins_for_SYSCFG_EXTICR          4
-#define Four_Pins_for_IPR_reg                4
-#define Eight_reg_bits                       8
-
-
-#define One_bit_mask                         1
-#define One_bit_mask_by_HEX                 0x1
-#define Two_consecutive_bits_mask_by_HEX    0x3
-#define bits_mask_by_HEX                    0xF
 
 /*new*/
 #define UART_INT_EN_MASK                             0x0000001F
@@ -52,8 +36,21 @@
 #define UART_BAUDRATE_FRACTION_MUL_FOR_OVER16    	 16
 #define UART_BAUDRATE_ROUND_VALUE                    50
 
+#define USART_2_TO_5_APB1ENR_REG_OFFEST              17
+#define USART_1_APB2ENR_REG_OFFEST                   4
 
-#include "UART_Driver.h"
+
+#define DR_2BITS_MASKING_TO_LOAD_9BITS             0x01FF
+#define DR_2BITS_MASKING_TO_READ_9BITS             0x01FF
+#define TRANSFER_8BITS                             0xFF
+#define RECEIVE_8BITS                              0xFF
+#define DR_MASKING_TO_READ_7BITS                   0x7F
+
+#define IDLE                                        0
+#define TX_IN_PROGRESS                              1
+#define RX_IN_PROGRESS                              1
+
+
 #define USART_2_TO_5_APB1ENR_REG_OFFEST 17
 #define USART_1_APB2ENR_REG_OFFEST 4
 
@@ -62,8 +59,8 @@
  * USART related status flag definition
  */
 
-#define USART_FLAG_TXE ( USART_SR_TXE)
-#define USART_FLAG_TC (1 << USART_SR_TC )
+#define USART_FLAG_TXE  (USART_SR_TXE)
+#define USART_FLAG_TC   (USART_SR_TC)
 #define USART_FLAG_RXNE (USART_SR_RXNE)
 
 /*

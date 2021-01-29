@@ -7,7 +7,7 @@
  * Date:		9/1/2021
  ******************************************************************************/
 
-
+#include "Common_Macros.h"
 #include "GPIO_Cfg.h"
 #include "GPIO.h"
 #include "GPIO_Lcfg.h"
@@ -26,25 +26,9 @@
 #define NVIC_IRQ_PRI5   5
 
 
-
-/*descriptive macros for magic numbers*/
-#define One_bit_shift                        1
-#define Two_bits_shift                       2
-#define Four_bits_shift                      4
-#define Eight_Pins_for_GPIOxAFRH_or_AFRL     8
-#define Four_Pins_for_SYSCFG_EXTICR          4
-#define Four_Pins_for_IPR_reg                4
-#define Eight_reg_bits                       8
-#define Number_one_in_HEX                0x00000001
-
-#define One_bit_mask                         1
-#define One_bit_mask_by_HEX                 0x1
-#define Two_consecutive_bits_mask_by_HEX    0x3
-#define bits_mask_by_HEX                    0xF
-
 #define last_regBit_num_31                  31
 #define ISER_reg_32Bits                     32
-#define ICER_reg_32Bits                    32
+#define ICER_reg_32Bits                     32
 
 #define Double_32Bits_for_ISER_reg          64
 #define Double_32Bits_for_ICER_reg          64
@@ -55,6 +39,8 @@
 // new
 #define NUM_OF_ISER                         4
 #define NUM_OF_ICER                         4
+
+
 uint32_t NVIC_ISR_BASE_ADDR_Arr [NUM_OF_ISER] = {NVIC_ISER0, NVIC_ISER1, NVIC_ISER2, NVIC_ISER3};
 
 uint32_t NVIC_ICR_BASE_ADDR_Arr [NUM_OF_ICER] = {NVIC_ICER0, NVIC_ICER1, NVIC_ICER2, NVIC_ICER3};
