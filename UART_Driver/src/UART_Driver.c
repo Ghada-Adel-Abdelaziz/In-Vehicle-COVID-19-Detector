@@ -9,27 +9,27 @@
  * Handle structure for USARTx peripheral
  */
 
-#include "Common_Macros.h"
+//#include "Common_Macros.h"
 #include "UART_Driver.h"
 #include "UART_Cfg.h"
 #include "UART_Lcfg.h"
 
 
 
-//// descriptive macros for magic numbers
-//#define One_bit_shift                        1
-//#define Two_bits_shift                       2
-//#define Four_bits_shift                      4
-//#define Eight_Pins_for_GPIOxAFRH_or_AFRL     8
-//#define Four_Pins_for_SYSCFG_EXTICR          4
-//#define Four_Pins_for_IPR_reg                4
-//#define Eight_reg_bits                       8
-//
-//
-//#define One_bit_mask                         1
-//#define One_bit_mask_by_HEX                 0x1
-//#define Two_consecutive_bits_mask_by_HEX    0x3
-//#define bits_mask_by_HEX                    0xF
+// descriptive macros for magic numbers
+#define One_bit_shift                        1
+#define Two_bits_shift                       2
+#define Four_bits_shift                      4
+#define Eight_Pins_for_GPIOxAFRH_or_AFRL     8
+#define Four_Pins_for_SYSCFG_EXTICR          4
+#define Four_Pins_for_IPR_reg                4
+#define Eight_reg_bits                       8
+
+
+#define One_bit_mask                         1
+#define One_bit_mask_by_HEX                 0x1
+#define Two_consecutive_bits_mask_by_HEX    0x3
+#define bits_mask_by_HEX                    0xF
 
 /*new*/
 #define UART_INT_EN_MASK                             0x0000001F
@@ -57,19 +57,6 @@
 #define USART_2_TO_5_APB1ENR_REG_OFFEST 17
 #define USART_1_APB2ENR_REG_OFFEST 4
 
-/*******
-typedef struct
-{
-	USART_RegDef_t *pUSARTx;
-	USART_Config_t  USART_Config;
-	uint8_t *pTxBuffer;
-	uint8_t *pRxBuffer;
-	uint32_t TxLen;
-	uint32_t RxLen;
-	uint8_t TxBusyState;
-	uint8_t RxBusyState;
-}USART_Handle_t;
- ******/
 
 /*
  * USART related status flag definition
@@ -86,6 +73,20 @@ typedef struct
 #define USART_BUSY_IN_TX 2
 #define USART_READY 0
 
+/*****Variables for Transmission******/
+static uint8_t gUSART_ID;
+static const uint8_t *Global_pTxData;
+static uint32_t Global_Len;
+static uint8_t TransmitRequest = 0;
+static uint8_t MemState = IDLE;
+
+/*****Variables for Reception******/
+static uint8_t gUSART_ID_R;
+static uint8_t *Global_pRxData;
+static uint8_t ReceivetRequest = 0;
+static uint32_t Global_LenR;
+static uint8_t MemState_R = IDLE;
+
 USART_RegDef_t *USART_Arr[NUM_OF_UART] = {USART1,USART2,USART3,USART4,USART5,USART6};
 
 
@@ -100,7 +101,7 @@ static void USART_PeripheralControl(uint8_t USART_ID, uint8_t Cmd)
 	USART_RegDef_t *pUSARTx = USART_Arr[USART_ID] ;
 
 	pUSARTx->USART_CR1 = (pUSARTx->USART_CR1 & ~(One_bit_mask << USART_CR1_UE))
-							|(Cmd << USART_CR1_UE);
+									|(Cmd << USART_CR1_UE);
 	/**********************************/
 
 }
@@ -229,7 +230,7 @@ void USART_Init(void)
 	for(;counter<NUMBER_OF_CONFIGURED_UART;counter++)
 	{
 		/******************************** Configuration of CR1******************************************/
-		pUSARTx = USART_Arr[UART_ConfigArray[counter].USART_ID] ;
+		//		pUSARTx = USART_Arr[UART_ConfigArray[counter].USART_ID] ;
 
 
 		//Implement the code to enable the Clock for given USART peripheral
@@ -278,7 +279,7 @@ void USART_Init(void)
 		}
 
 		//Program the CR1 register
-		USART_Arr[UART_ConfigArray[counter].USART_ID]->USART_CR1 = TempReg;
+		pUSARTx->USART_CR1 = TempReg;
 
 
 		USART_PeripheralControl(UART_ConfigArray[counter].USART_ID, ENABLE);
@@ -291,7 +292,7 @@ void USART_Init(void)
 		TempReg |= UART_ConfigArray[counter].USART_NoOfStopBits << USART_CR2_STOP;
 
 		//Program the CR2 register
-		USART_Arr[UART_ConfigArray[counter].USART_ID]->USART_CR2 = TempReg;
+		pUSARTx->USART_CR2 = TempReg;
 
 
 		/******************************** Configuration of CR3******************************************/
@@ -318,12 +319,13 @@ void USART_Init(void)
 		}
 
 
-		USART_Arr[UART_ConfigArray[counter].USART_ID]->USART_CR3 = TempReg;
+		pUSARTx->USART_CR3 = TempReg;
 
 		/******************************** Configuration of BRR(Baudrate register)******************************************/
 
-		USART_SetBaudRate(UART_ConfigArray[counter].USART_ID ,UART_ConfigArray[counter].USART_Baud);
+		//USART_SetBaudRate(UART_ConfigArray[counter].USART_ID ,UART_ConfigArray[counter].USART_Baud);
 
+		USART2->USART_BRR = 0x1117;
 	}
 }
 
@@ -341,52 +343,85 @@ void USART_Init(void)
  * @Note              - Resolve all the TODOs
 
  */
-void USART_SendData(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len)
+void USART_SendDataRequest(uint8_t USART_ID , const uint8_t *pTxBuffer, uint32_t Len)
 {
+	gUSART_ID = USART_ID;
+	Global_pTxData = pTxBuffer;
+	Global_Len = Len;
+	TransmitRequest = 1;
+}
 
-	USART_RegDef_t *pUSARTx = USART_Arr[USART_ID] ;
-	uint16_t *pdata;
-	//Loop over until "Len" number of bytes are transferred
+Tx_or_Rx_Feedback TransmitDoneFeedback(void)
+{
+	static USART_RegDef_t *Local_pUSARTx;
+	Local_pUSARTx = USART_Arr[gUSART_ID];
+	static const uint16_t *pTxBuffer;
+	//static Tx_or_Rx_Feedback TC_FlagState = FALSE;
+	static uint32_t TX_Counter = 0;
+
+	pTxBuffer = (uint16_t *)Global_pTxData;
+
 	uint32_t i = 0;
-	for( ; i < Len; i++)
+
+	switch(MemState)
 	{
-		//Implement the code to wait until TXE flag is set in the SR
-		while(! USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_TXE));
-
-		//Check the USART_WordLength item for 9BIT or 8BIT in a frame
-		if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)
+	case IDLE :
+		if(TransmitRequest == 1)
 		{
-			//if 9BIT, load the DR with 2bytes masking the bits other than first 9 bits
-			pdata = (uint16_t*) pTxBuffer;
-			pUSARTx->USART_DR = (*pdata & (uint16_t)0x01FF);
-
-			//check for USART_ParityControl
-			if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
+			TransmitRequest = 0;
+			MemState = TX_IN_PROGRESS;
+		}
+		break;
+	case TX_IN_PROGRESS :
+		if(  USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_TXE) )
+		{
+			if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)
 			{
-				//No parity is used in this transfer. so, 9bits of user data will be sent
-				//Implement the code to increment pTxBuffer twice
-				pTxBuffer++;
-				pTxBuffer++;
+				//if 9BIT, load the DR with 2bytes masking the bits other than first 9 bits
+				Local_pUSARTx->USART_DR = (*pTxBuffer & (uint16_t)DR_2BITS_MASKING_TO_LOAD_9BITS);
+
+				//check for USART_ParityControl
+				if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
+				{
+					//No parity is used in this transfer. so, 9bits of user data will be sent
+					//Implement the code to increment pTxBuffer twice
+					Global_pTxData++;
+					Global_pTxData++;
+				}
+				else
+				{
+					//Parity bit is used in this transfer . so , 8bits of user data will be sent
+					//The 9th bit will be replaced by parity bit by the hardware
+					Global_pTxData++;
+				}
 			}
 			else
 			{
-				//Parity bit is used in this transfer . so , 8bits of user data will be sent
-				//The 9th bit will be replaced by parity bit by the hardware
-				pTxBuffer++;
-			}
-		}
-		else
-		{
-			//This is 8bit data transfer
-			pUSARTx->USART_DR = (*pTxBuffer  & (uint8_t)0xFF);
 
-			//Implement the code to increment the buffer address
-			pTxBuffer++;
+				//This is 8bit data transfer
+				Local_pUSARTx->USART_DR = (*Global_pTxData  & (uint8_t)TRANSFER_8BITS);
+
+				//Implement the code to increment the buffer address
+				Global_pTxData++;
+
+			}
+			TX_Counter ++;
 		}
+		break;
 	}
 
-	//Implement the code to wait till TC flag is set in the SR
-	while( ! USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_TC));
+
+
+	if(TX_Counter >= Global_Len)
+	{
+		TX_Counter = 0;
+		MemState = IDLE;
+		//TC_FlagState = TRUE;
+		return TRUE;
+
+	}
+	return FALSE;
+
 }
 
 
@@ -404,70 +439,102 @@ void USART_SendData(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len)
  * @Note              -
 
  */
-
-void USART_ReceiveData(uint8_t USART_ID, uint8_t *pRxBuffer, uint32_t Len)
+void USART_ReceiveDataRequest(uint8_t USART_ID, const uint8_t *pRxBuffer, uint32_t LenR)
 {
-	USART_RegDef_t *pUSARTx = USART_Arr[USART_ID];
-	//Loop over until "Len" number of bytes are transferred
+	gUSART_ID_R = USART_ID;
+	Global_pRxData = pRxBuffer;
+	Global_LenR = LenR;
+	ReceivetRequest = 1;
+}
+
+Tx_or_Rx_Feedback ReceiveDoneFeedback(void)
+{
+	static USART_RegDef_t *Local_pUSARTx;
+	Local_pUSARTx = USART_Arr[gUSART_ID_R];
+	const uint16_t *pRxBuffer;
+	static uint32_t RX_Counter = 0;
+	pRxBuffer = (uint16_t *)Global_pRxData;
+
+
 	uint32_t i = 0;
-	for(; i < Len; i++)
+
+	switch(MemState_R)
 	{
-		//Implement the code to wait until RXNE flag is set in the SR
-		while(! USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_RXNE));
-
-		//Check the USART_WordLength to decide whether we are going to receive 9bit of data in a frame or 8 bit
-		if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)
+	case IDLE :
+		if(ReceivetRequest == 1)
 		{
-			//We are going to receive 9bit data in a frame
+			ReceivetRequest = 0;
+			MemState_R = RX_IN_PROGRESS;
+		}
+		break;
+	case RX_IN_PROGRESS :
 
-			//check are we using USART_ParityControl control or not
-			if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
+		if ( USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_RXNE))
+		{
+			//Check the USART_WordLength to decide whether we are going to receive 9bit of data in a frame or 8 bit
+			if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)
 			{
-				//No parity is used. so, all 9bits will be of user data
+				//We are going to receive 9bit data in a frame
 
-				//read only first 9 bits. so, mask the DR with 0x01FF
+				//check are we using USART_ParityControl control or not
+				if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
+				{
+					//No parity is used. so, all 9bits will be of user data
 
-				*((uint16_t*) pRxBuffer) = (pUSARTx->USART_DR  & (uint16_t)0x01FF);
+					//read only first 9 bits. so, mask the DR with 0x01FF
 
-				//Now increment the pRxBuffer two times
-				pRxBuffer++;
-				pRxBuffer++;
+					*((uint16_t*) Global_pRxData) = (Local_pUSARTx->USART_DR  & (uint16_t)DR_2BITS_MASKING_TO_READ_9BITS);
+
+					//Now increment the pRxBuffer two times
+					Global_pRxData++;
+					Global_pRxData++;
+				}
+				else
+				{
+					//Parity is used, so, 8bits will be of user data and 1 bit is parity
+					*Global_pRxData = (Local_pUSARTx->USART_DR  & (uint8_t)RECEIVE_8BITS);
+
+					//Increment the pRxBuffer
+					Global_pRxData++;
+				}
 			}
 			else
 			{
-				//Parity is used, so, 8bits will be of user data and 1 bit is parity
-				*pRxBuffer = (pUSARTx->USART_DR  & (uint8_t)0xFF);
+				//We are going to receive 8bit data in a frame
 
-				//Increment the pRxBuffer
-				pRxBuffer++;
+				//check are we using USART_ParityControl control or not
+				if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
+				{
+					//No parity is used , so all 8bits will be of user data
+
+					//read 8 bits from DR
+					*Global_pRxData = Local_pUSARTx->USART_DR;
+				}
+
+				else
+				{
+					//Parity is used, so , 7 bits will be of user data and 1 bit is parity
+
+					//read only 7 bits , hence mask the DR with 0X7F
+					*Global_pRxData = (Local_pUSARTx->USART_DR & (uint8_t) DR_MASKING_TO_READ_7BITS);
+
+				}
+
+				//increment the pRxBuffer
+				Global_pRxData++;
 			}
+			RX_Counter ++;
 		}
-		else
-		{
-			//We are going to receive 8bit data in a frame
-
-			//check are we using USART_ParityControl control or not
-			if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
-			{
-				//No parity is used , so all 8bits will be of user data
-
-				//read 8 bits from DR
-				*pRxBuffer = pUSARTx->USART_DR;
-			}
-
-			else
-			{
-				//Parity is used, so , 7 bits will be of user data and 1 bit is parity
-
-				//read only 7 bits , hence mask the DR with 0X7F
-				*pRxBuffer = ( pUSARTx->USART_DR & (uint8_t) 0x7F);
-
-			}
-
-			//increment the pRxBuffer
-			pRxBuffer++;
-		}
+		break;
 	}
+	if(RX_Counter >= Global_LenR)
+	{
+		RX_Counter = 0;
+		MemState_R = IDLE;
+		return TRUE;
+
+	}
+	return FALSE;
 
 }
 

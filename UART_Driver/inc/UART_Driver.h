@@ -1,14 +1,13 @@
 /*
  * stm32f407xx_uartdriver.h
  *
- *  Created on: 15-Jun-2020
- *      Author: Selva Kumar
+ *  Created on: 27-JAN-2021
+ *      Author: TOQA&GHADA
  */
 
 #ifndef INC_STM32F407XX_UARTDRIVER_H_
 #define INC_STM32F407XX_UARTDRIVER_H_
 
-#include "stm32f4xxx.h"
 
 typedef enum
 {
@@ -16,6 +15,12 @@ typedef enum
 	_SET_
 }FLAG_STATUS;
 
+typedef enum
+{
+	FALSE,
+	TRUE
+
+}Tx_or_Rx_Feedback;
 /******************************************************************************************
  *								APIs supported by this driver
  *		 For more information about the APIs check the function definitions
@@ -30,8 +35,10 @@ void USART_Init(void);
 /*
  * Data Send and Receive
  */
-void USART_SendData(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len);
-void  USART_ReceiveData(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len);
+void USART_SendDataRequest(uint8_t USART_ID , const uint8_t *pTxBuffer, uint32_t Len);
+Tx_or_Rx_Feedback TransmitDoneFeedback(void);
+void USART_ReceiveDataRequest(uint8_t USART_ID, const uint8_t *pRxBuffer, uint32_t LenR);
+Tx_or_Rx_Feedback ReceiveDoneFeedback(void);
 uint8_t USART_SendDataIT(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len);
 uint8_t USART_ReceiveDataIT(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len);
 

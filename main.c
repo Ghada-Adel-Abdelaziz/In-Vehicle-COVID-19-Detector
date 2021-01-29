@@ -28,20 +28,17 @@ SOFTWARE.
  */
 
 /* Includes */
-#include "GPIO_cfg.h"
+
+
 #include "stm32f4xxx.h"
-
-/* Private macro */
-/* Private variables */
-/* Private function prototypes */
-/* Private functions */
-
-
-//#include "stm32f4xx.h"
-
-
 #include "GPIO_lcfg.h"
 #include "GPIO.h"
+#include "GPIO_cfg.h"
+#include "UART_cfg.h"
+#include "UART_cfg.h"
+#include "UART_Lcfg.h"
+#include "UART_Driver.h"
+
 
 /**
  **===========================================================================
@@ -52,23 +49,29 @@ SOFTWARE.
  */
 int main(void)
 {
-	int i = 0;
 	GPIO_Init();
+	USART_Init();
+	USART_SendDataRequest(USART2_ , (uint8_t*)msg, strlen(msg));
+	Tx_or_Rx_Feedback Tx_State = FALSE;
+	USART_ReceiveDataRequest(USART2_ , (uint8_t*)msgg, 5);
+	Tx_or_Rx_Feedback Rx_State = FALSE;
 	while (1)
 	{
-		GPIO_WriteOutputPin(LED0 , GPIO_PIN_SET);
-		GPIO_WriteOutputPin(LED1 , GPIO_PIN_SET);
-		GPIO_WriteOutputPin(LED2 , GPIO_PIN_SET);
-		GPIO_WriteOutputPin(LED3 , GPIO_PIN_SET);
+		Tx_State = TransmitDoneFeedback();
+		if(Tx_State == TRUE )
+		{
+			Tx_State == FALSE;
+			GPIO_WriteOutputPin(LED0 , GPIO_PIN_SET);
 
-		for(i=0; i<4000000; i++);
 
-		GPIO_WriteOutputPin(LED0 , GPIO_PIN_RESET);
-		GPIO_WriteOutputPin(LED1 , GPIO_PIN_RESET);
-		GPIO_WriteOutputPin(LED2 , GPIO_PIN_RESET);
-		GPIO_WriteOutputPin(LED3 , GPIO_PIN_RESET);
 
-		for(i=0; i<4000000; i++);
+		}
 
+		Rx_State = ReceiveDoneFeedback();
+		if(msgg[2]==2)
+			GPIO_WriteOutputPin(LED1 , GPIO_PIN_SET);
+		else
+
+			GPIO_WriteOutputPin(LED1 , GPIO_PIN_RESET);
 	}
 }

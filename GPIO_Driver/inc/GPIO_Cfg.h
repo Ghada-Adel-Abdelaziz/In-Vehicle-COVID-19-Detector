@@ -14,12 +14,12 @@
 /* number of configured pins which is the size of the configuration array of structures */
 #define NUMBER_OF_CONFIGURED_PINS  6
 
-#define LED0      GPIO_CHANNEL_D13
-#define LED1      GPIO_CHANNEL_D14
-#define LED2      GPIO_CHANNEL_D12
-#define LED3      GPIO_CHANNEL_D15
+#define LED0          GPIO_CHANNEL_D13
+#define LED1          GPIO_CHANNEL_D14
+#define LED2          GPIO_CHANNEL_D12
+#define LED3          GPIO_CHANNEL_D15
 #define UART2_TX      GPIO_CHANNEL_A2
-#define UART2_RX       GPIO_CHANNEL_A3
+#define UART2_RX      GPIO_CHANNEL_A3
 
 /*********************/
 
