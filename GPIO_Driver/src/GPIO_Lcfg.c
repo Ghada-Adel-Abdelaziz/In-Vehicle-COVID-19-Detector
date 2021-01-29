@@ -19,11 +19,13 @@
  ************************************************************************/
 
 GPIO_pinconfig_t GPIO_PinConfigArray[NUMBER_OF_CONFIGURED_PINS] =
-/*	PinNumber   PinMode        PinSpeed       PinPuPdControl    PinOPType   AltFunMode */
+		/*	PinNumber   PinMode           PinSpeed         PinPuPdControl    PinOPType   AltFunMode */
 {
-	{LED0,   GPIO_MODE_OUT,  GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,   0},
-	{LED1,   GPIO_MODE_OUT,  GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,   0},
-	{LED2,   GPIO_MODE_OUT,  GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,   0},
-	{LED3,   GPIO_MODE_OUT,  GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,   0},
+		{LED0,       GPIO_MODE_OUT,    GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,      0},
+		{LED1,       GPIO_MODE_OUT,    GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,      0},
+		{LED2,       GPIO_MODE_OUT,    GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,      0},
+		{LED3,       GPIO_MODE_OUT,    GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,      0},
+		{UART2_TX ,  GPIO_MODE_ALTFN,  GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,      7},
+		{UART2_RX ,  GPIO_MODE_ALTFN,  GPIO_SPEED_MEDIUM,  GPIO_NO_PUPD,  GPIO_TYPE_PP,      7},
 
 };

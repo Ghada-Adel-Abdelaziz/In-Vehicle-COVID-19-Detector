@@ -8,16 +8,16 @@
  ******************************************************************************/
 
 
-#include "GPIO_cfg.h"
+#include "GPIO_Cfg.h"
 #include "GPIO.h"
-#include "GPIO_lcfg.h"
+#include "GPIO_Lcfg.h"
 
 
 #define PORT_NUMBER_OF_BITS_IN_REG         16
 
 
 
-//NVIC IRQ interrupt priority number
+/*NVIC IRQ interrupt priority number*/
 #define NVIC_IRQ_PRI0   0
 #define NVIC_IRQ_PRI1   1
 #define NVIC_IRQ_PRI2   2
@@ -27,7 +27,7 @@
 
 
 
-// descriptive macros for magic numbers
+/*descriptive macros for magic numbers*/
 #define One_bit_shift                        1
 #define Two_bits_shift                       2
 #define Four_bits_shift                      4
@@ -59,17 +59,9 @@ GPIO_regdef_t *GPIO_Arr[NUM_OF_GPIO] = {GPIOA,GPIOB,GPIOC,GPIOD,GPIOE,GPIOF,GPIO
 /*****************************************************************************************************/
 
 
-//handle structure for GPIO
-
-
 static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnorDi);
-
-//void GPIO_PeriClockControl(GPIO_regdef_t *pGPIOx,uint8_t EnorDi)
 static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnCLK)
 {
-	//	GPIO_PCLK_EN &=~ (One_bit_shift << PORT_num);
-	//	GPIO_PCLK_EN |= (EnCLK << PORT_num);
-
 	GPIO_PCLK_EN =(GPIO_PCLK_EN & ~(One_bit_shift << PORT_num))
 					|(EnCLK << PORT_num);
 }
@@ -84,8 +76,6 @@ return     -
 Note       =
  */
 
-
-
 // Modified
 void GPIO_Init(void)
 {
@@ -93,13 +83,16 @@ void GPIO_Init(void)
 	uint8_t counter=0;
 	uint8_t PortNumber=0;
 	uint8_t PinActualNumber=0;
+	uint32_t temp;
+	uint8_t temp1;
+	uint8_t temp2;
 
 
 	for( counter=0; counter<NUMBER_OF_CONFIGURED_PINS; counter++ )
 	{
 		PortNumber = ( GPIO_PinConfigArray[counter].GPIO_PinNumber) / PORT_NUMBER_OF_BITS_IN_REG;
 		PinActualNumber = (GPIO_PinConfigArray[counter].GPIO_PinNumber) % PORT_NUMBER_OF_BITS_IN_REG;
-		uint32_t temp = 0;  //temp register ////HA 10/1/2020: to be moved to the begining of the function
+	    temp = 0;  //temp register ////HA 10/1/2020: to be moved to the begining of the function
 		//enable the peripheral clock
 		GPIO_PeriClockControl(PortNumber, ENABLE);
 		GPIO_regdef_t *pGPIOx = GPIO_Arr[PortNumber];
@@ -116,63 +109,61 @@ void GPIO_Init(void)
 			//this part for interrupt mode
 			if(GPIO_PinConfigArray[counter].GPIO_PinMode == GPIO_MODE_IT_FT)
 			{
-				//configure the FTSR
+				/*configure the FTSR*/
 				EXTI->FTSR |= ( One_bit_shift << PinActualNumber);
-				//clear the corresponding RTSR bit
+				/*clear the corresponding RTSR bit*/
 				EXTI->RTSR &= ~(One_bit_mask << PinActualNumber);
 			}
 			else if(GPIO_PinConfigArray[counter].GPIO_PinMode == GPIO_MODE_IT_RT)
 			{
-				//configure the RTSR
+				/*configure the RTSR*/
 				EXTI->RTSR |= ( One_bit_shift << PinActualNumber);
-				//clear the correspnding RISR bit
+				/*clear the correspnding RISR bit*/
 				EXTI->FTSR &= ~( One_bit_mask << PinActualNumber);
 			}
 			else if(GPIO_PinConfigArray[counter].GPIO_PinMode == GPIO_MODE_IT_RFT)
 			{
-				//configure the FTSR and RTSR
+				/*configure the FTSR and RTSR*/
 				EXTI->RTSR |= ( One_bit_shift << PinActualNumber);
 
 				EXTI->FTSR |= ( One_bit_shift << PinActualNumber);
 			}
 
-			//configure the GPIO port selection in SYSCFG_EXTICR
+			/*configure the GPIO port selection in SYSCFG_EXTICR*/
 			uint8_t temp1 = PinActualNumber / Four_Pins_for_SYSCFG_EXTICR;//HA 10/1/2020: all variables to be declared at the begining of the function
 			uint8_t temp2 = PinActualNumber % Four_Pins_for_SYSCFG_EXTICR;
 			uint8_t portcode = GPIO_BASEADDR_TO_CODE(pGPIOx);
 			SYSCFG->EXTICR[temp1] = portcode << (temp2 * Four_bits_shift);
 			SYSCFG_PCLK_EN;
-			//enable the exti interrupt delivery using IMR
+			/*enable the exti interrupt delivery using IMR*/
 			EXTI->IMR |= (One_bit_shift << GPIO_PinConfigArray[counter]	.GPIO_PinNumber);
 		}
 
 		temp = 0;
 
-		//configure the speed
+		/*configure the speed*/
 		temp = (GPIO_PinConfigArray[counter].GPIO_PinSpeed << (Two_bits_shift * PinActualNumber));
 		pGPIOx->OSPEEDR &= ~( Two_consecutive_bits_mask_by_HEX << PinActualNumber );
 		pGPIOx->OSPEEDR |= temp;
 
 		temp = 0;
 
-		//configure the pupd setting
+		/*configure the pupd setting*/
 		temp = (GPIO_PinConfigArray[counter].GPIO_PinPuPdControl << (Two_bits_shift * PinActualNumber) );
 		pGPIOx->PUPDR &= ~(Two_consecutive_bits_mask_by_HEX << PinActualNumber);  //clearing
 		pGPIOx->PUPDR |= temp;
 
 		temp = 0;
 
-		//configure the optype
+		/*configure the optype*/
 		temp = (GPIO_PinConfigArray[counter].GPIO_PinOPType << PinActualNumber);
 		pGPIOx->OTYPER &= ~( One_bit_mask_by_HEX << PinActualNumber );
 		pGPIOx->OTYPER |= temp;
 
-		//configure the alternate functionality
+		/*configure the alternate functionality*/
 		if(GPIO_PinConfigArray[counter].GPIO_PinMode == GPIO_MODE_ALTFN)
 		{
-			//alternate function
-			uint8_t temp1,temp2;
-
+			/*alternate function*/
 			temp1 = PinActualNumber / Eight_Pins_for_GPIOxAFRH_or_AFRL;
 			temp2 = PinActualNumber % Eight_Pins_for_GPIOxAFRH_or_AFRL;
 			pGPIOx->AFR[temp1] &= ~(bits_mask_by_HEX << (Four_bits_shift * temp2) ); //clearing
@@ -182,7 +173,7 @@ void GPIO_Init(void)
 	}
 }
 /*init and De-init
-fn   -   GPIO_periclockcontrol
+fn   -   GPIO_RESET
 brief -  This function enables or disables peripheral clock for the given GPIO port
 Parameter  -  Base address of the gpio peripheral
 Parameter  -  Enable or disable macros
@@ -191,18 +182,17 @@ return     -
 Note       =
  */
 
-//void GPIO_DeInit(GPIO_regdef_t *pGPIOx)
 void GPIO_RESET(uint8_t PORT_num)
 {
 	GPIO_RESET_REG |= (One_bit_shift << PORT_num);
 	GPIO_RESET_REG &= ~(One_bit_mask << PORT_num);
 
-	return;//HA 10/1/2020: no return for void function
+	//HA 10/1/2020: no return for void function
 
 }
 
 /*init and De-init
-fn   -   GPIO_periclockcontrol
+fn   -   GPIO_ReadInputPin
 brief -  This function enables or disables peripheral clock for the given GPIO port
 Parameter  -  Base address of the gpio peripheral
 Parameter  -  Enable or disable macros
@@ -211,7 +201,6 @@ return     -
 Note       =
  */
 
-//uint8_t GPIO_ReadInputPin(GPIO_regdef_t *pGPIOx, uint8_t PinNumber)
 PIN_STATE GPIO_ReadInputPin(uint8_t Pin)
 {
 	uint8_t value;
@@ -229,7 +218,7 @@ PIN_STATE GPIO_ReadInputPin(uint8_t Pin)
 	return value;
 }
 /*init and De-init
-fn   -   GPIO_periclockcontrol
+fn   -   GPIO_ReadInputPort
 brief -  This function enables or disables peripheral clock for the given GPIO port
 Parameter  -  Base address of the gpio peripheral
 Parameter  -  Enable or disable macros
@@ -238,7 +227,6 @@ return     -
 Note       =
  */
 
-//uint16_t GPIO_ReadInputPort(GPIO_regdef_t *pGPIOx)
 uint16_t GPIO_ReadInputPort(uint8_t PORT_num)
 {
 	uint16_t value;
@@ -248,8 +236,8 @@ uint16_t GPIO_ReadInputPort(uint8_t PORT_num)
 
 	return value;
 }
-/*init and De-init
-fn   -   GPIO_periclockcontrol
+/*
+fn   -   GPIO_WriteOutputPin
 brief -  This function enables or disables peripheral clock for the given GPIO port
 Parameter  -  Base address of the gpio peripheral
 Parameter  -  Enable or disable macros
@@ -258,7 +246,6 @@ return     -
 Note       =
  */
 
-//void GPIO_WriteOutputPin(GPIO_regdef_t *pGPIOx, uint8_t PinNumber, uint8_t Value)
 void GPIO_WriteOutputPin(uint8_t Pin, uint8_t Value)
 {
 
@@ -282,8 +269,8 @@ void GPIO_WriteOutputPin(uint8_t Pin, uint8_t Value)
 	}
 
 }
-/*init and De-init
-fn   -   GPIO_periclockcontrol
+/*
+fn   -   GPIO_WriteOutputPort
 brief -  This function enables or disables peripheral clock for the given GPIO port
 Parameter  -  Base address of the gpio peripheral
 Parameter  -  Enable or disable macros
@@ -292,38 +279,11 @@ return     -
 Note       =
  */
 
-//void GPIO_WriteOutputPort(GPIO_regdef_t *pGPIOx, uint16_t Value)
 void GPIO_WriteOutputPort(uint8_t PORT_num, uint16_t Value)
 {
 	GPIO_regdef_t *pGPIOx = GPIO_Arr[PORT_num];       //new
 	pGPIOx->ODR = Value;
 }
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
-
-//void GPIO_ToggleOutputPin(GPIO_regdef_t *pGPIOx, uint8_t PinNumber);
-void GPIO_ToggleOutputPin(uint8_t PORT_num, uint8_t PinNumber)
-{
-	GPIO_regdef_t *pGPIOx = GPIO_Arr[PORT_num];       // new
-	pGPIOx->ODR ^= (One_bit_shift << PinNumber);
-}
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
-
 
 /*IRQ configuration and ISR handling
 fn   -   GPIO_periclockcontrol
