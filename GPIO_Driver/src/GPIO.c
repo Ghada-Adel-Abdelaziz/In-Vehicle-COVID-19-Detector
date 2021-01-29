@@ -53,6 +53,11 @@
 #define Four_times_32Bits_FOR_ICER_reg      96
 
 // new
+#define NUM_OF_ISER                         4
+#define NUM_OF_ICER                         4
+uint32_t NVIC_ISR_BASE_ADDR_Arr [NUM_OF_ISER] = {NVIC_ISER0, NVIC_ISER1, NVIC_ISER2, NVIC_ISER3};
+
+uint32_t NVIC_ICR_BASE_ADDR_Arr [NUM_OF_ICER] = {NVIC_ICER0, NVIC_ICER1, NVIC_ICER2, NVIC_ICER3};
 
 /************************************************************ NEW ************************************/
 GPIO_regdef_t *GPIO_Arr[NUM_OF_GPIO] = {GPIOA,GPIOB,GPIOC,GPIOD,GPIOE,GPIOF,GPIOG,GPIOH,GPIOI};
@@ -63,7 +68,7 @@ static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnorDi);
 static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnCLK)
 {
 	GPIO_PCLK_EN =(GPIO_PCLK_EN & ~(One_bit_shift << PORT_num))
-					|(EnCLK << PORT_num);
+															|(EnCLK << PORT_num);
 }
 
 /*init and De-init
@@ -92,17 +97,18 @@ void GPIO_Init(void)
 	{
 		PortNumber = ( GPIO_PinConfigArray[counter].GPIO_PinNumber) / PORT_NUMBER_OF_BITS_IN_REG;
 		PinActualNumber = (GPIO_PinConfigArray[counter].GPIO_PinNumber) % PORT_NUMBER_OF_BITS_IN_REG;
-	    temp = 0;  //temp register ////HA 10/1/2020: to be moved to the begining of the function
+		temp = 0;  //temp register ////HA 10/1/2020: to be moved to the begining of the function
 		//enable the peripheral clock
 		GPIO_PeriClockControl(PortNumber, ENABLE);
 		GPIO_regdef_t *pGPIOx = GPIO_Arr[PortNumber];
 		//configure the mode of gpio pin
 		if(GPIO_PinConfigArray[counter].GPIO_PinMode <= GPIO_MODE_ANALOG)
 		{
-			temp = (GPIO_PinConfigArray[counter].GPIO_PinMode << (Two_bits_shift * PinActualNumber) );
-			pGPIOx->MODER &= ~( Two_consecutive_bits_mask_by_HEX << PinActualNumber );
-			pGPIOx->MODER |= temp;
-			temp = 0;
+			temp = pGPIOx->MODER;
+			temp &= ~(0x3UL << (PinActualNumber * 2u));
+			temp |= ((GPIO_PinConfigArray[counter].GPIO_PinMode & 0x00000003U) << (PinActualNumber * 2u));
+			pGPIOx->MODER = temp;
+
 		}
 		else
 		{
@@ -142,32 +148,31 @@ void GPIO_Init(void)
 		temp = 0;
 
 		/*configure the speed*/
-		temp = (GPIO_PinConfigArray[counter].GPIO_PinSpeed << (Two_bits_shift * PinActualNumber));
-		pGPIOx->OSPEEDR &= ~( Two_consecutive_bits_mask_by_HEX << PinActualNumber );
-		pGPIOx->OSPEEDR |= temp;
-
-		temp = 0;
+		temp = pGPIOx->OSPEEDR;
+		temp &= ~(0x3UL << (PinActualNumber * 2u));
+		temp |= ((GPIO_PinConfigArray[counter].GPIO_PinSpeed & 0x00000003U) << (PinActualNumber * 2u));
+		pGPIOx->OSPEEDR = temp;
 
 		/*configure the pupd setting*/
-		temp = (GPIO_PinConfigArray[counter].GPIO_PinPuPdControl << (Two_bits_shift * PinActualNumber) );
-		pGPIOx->PUPDR &= ~(Two_consecutive_bits_mask_by_HEX << PinActualNumber);  //clearing
-		pGPIOx->PUPDR |= temp;
-
-		temp = 0;
+		temp = pGPIOx->PUPDR;
+		temp &= ~(0x3UL << (PinActualNumber * 2u));
+		temp |= ((GPIO_PinConfigArray[counter].GPIO_PinPuPdControl & 0x00000003U) << (PinActualNumber * 2u));
+		pGPIOx->PUPDR = temp;
 
 		/*configure the optype*/
-		temp = (GPIO_PinConfigArray[counter].GPIO_PinOPType << PinActualNumber);
-		pGPIOx->OTYPER &= ~( One_bit_mask_by_HEX << PinActualNumber );
-		pGPIOx->OTYPER |= temp;
+		temp = pGPIOx->OTYPER;
+		temp &= ~(0x3UL << (PinActualNumber * 2u));
+		temp |= ((GPIO_PinConfigArray[counter].GPIO_PinOPType & 0x00000003U) << (PinActualNumber * 2u));
+		pGPIOx->OTYPER = temp;
 
 		/*configure the alternate functionality*/
 		if(GPIO_PinConfigArray[counter].GPIO_PinMode == GPIO_MODE_ALTFN)
 		{
 			/*alternate function*/
-			temp1 = PinActualNumber / Eight_Pins_for_GPIOxAFRH_or_AFRL;
-			temp2 = PinActualNumber % Eight_Pins_for_GPIOxAFRH_or_AFRL;
-			pGPIOx->AFR[temp1] &= ~(bits_mask_by_HEX << (Four_bits_shift * temp2) ); //clearing
-			pGPIOx->AFR[temp1] = (GPIO_PinConfigArray[counter].GPIO_PinAltFunMode << (Four_bits_shift * temp2) ); //setting
+			temp = pGPIOx->AFR[PinActualNumber >> 3u];
+			temp &= ~(0xFu << ((PinActualNumber & 0x07u) * 4u));
+			temp |= ((GPIO_PinConfigArray[counter].GPIO_PinAltFunMode ) << ((PinActualNumber & 0x07u) * 4u));
+			pGPIOx->AFR[PinActualNumber >> 3u] = temp; //setting
 		}
 
 	}
@@ -295,45 +300,25 @@ return     -
 Note       =
  */
 
-void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)//HA 10/1/2020: too complex. need to be simplified
+void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)
 {
-	if(EnorDi == ENABLE)
+
+	uint8_t ISER_Num=0;
+	uint8_t IRQActualNumber=0;
+
+
+	ISER_Num = IRQNumber / 32;
+	IRQActualNumber = IRQNumber % 32;
+
+
+	switch(EnorDi)
 	{
-		if(IRQNumber <= last_regBit_num_31)
-		{
-			//Program ISER0 register
-			*NVIC_ISER0 |= ( One_bit_shift << (IRQNumber % ISER_reg_32Bits) );
-		}
-
-		else if(IRQNumber > last_regBit_num_31 && IRQNumber < Double_32Bits_for_ISER_reg)
-		{
-			//Program ISER1 register
-			*NVIC_ISER1 |= ( One_bit_shift << (IRQNumber % ISER_reg_32Bits) );
-		}
-		else if(IRQNumber >= Double_32Bits_for_ISER_reg && IRQNumber < Four_times_32Bits_FOR_ISER_reg)
-		{
-			//Program ISER2 register
-			*NVIC_ISER2 |= ( One_bit_shift << (IRQNumber % Double_32Bits_for_ISER_reg) );
-		}
-		else
-		{
-			if(IRQNumber <= last_regBit_num_31)
-			{
-				//Program ICER0 register
-				*NVIC_ICER0 |= ( One_bit_shift << (IRQNumber % ICER_reg_32Bits) );
-			}
-
-			else if(IRQNumber > last_regBit_num_31 && IRQNumber < Double_32Bits_for_ICER_reg)
-			{
-				//Program ICER1 register
-				*NVIC_ICER1 |= ( One_bit_shift << (IRQNumber % ICER_reg_32Bits) );
-			}
-			else if(IRQNumber >= Double_32Bits_for_ICER_reg && IRQNumber < Four_times_32Bits_FOR_ICER_reg)
-			{
-				//Program ICER2 register
-				*NVIC_ICER2 |= ( One_bit_shift << (IRQNumber % Double_32Bits_for_ICER_reg) );
-			}
-		}
+	case ENABLE:
+		 NVIC_ISR_BASE_ADDR_Arr [ISER_Num] = 1<< IRQActualNumber;
+		break;
+	case DISABLE:
+		NVIC_ICR_BASE_ADDR_Arr [ISER_Num] = 1<< IRQActualNumber;
+		break;
 	}
 }
 
