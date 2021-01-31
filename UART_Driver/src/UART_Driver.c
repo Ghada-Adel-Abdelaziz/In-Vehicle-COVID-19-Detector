@@ -319,10 +319,10 @@ void USART_Init(void)
 		pUSARTx->USART_CR3 = TempReg;
 
 		/******************************** Configuration of BRR(Baudrate register)******************************************/
-
+        //HA:Commented code is not allowed
 		//USART_SetBaudRate(UART_ConfigArray[counter].USART_ID ,UART_ConfigArray[counter].USART_Baud);
 
-		USART2->USART_BRR = 0x1117;
+		USART2->USART_BRR = 0x1117;//HA: magic number is not allowed
 	}
 }
 
@@ -356,8 +356,8 @@ Tx_or_Rx_Feedback TransmitDoneFeedback(void)
 	//static Tx_or_Rx_Feedback TC_FlagState = FALSE;
 	static uint32_t TX_Counter = 0;
 
-	pTxBuffer = (uint16_t *)Global_pTxData;
-
+	pTxBuffer = (uint16_t *)Global_pTxData; //HA: no cast needed. the data is always 8 bits even if parity is suppported
+    *(Global_pTxData + TxCounter) 
 	uint32_t i = 0;
 
 	switch(MemState)
@@ -372,12 +372,13 @@ Tx_or_Rx_Feedback TransmitDoneFeedback(void)
 	case TX_IN_PROGRESS :
 		if(  USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_TXE) )
 		{
-			if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)
+			if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)//HA: 9 bit data is not supported by ur design
 			{
 				//if 9BIT, load the DR with 2bytes masking the bits other than first 9 bits
 				Local_pUSARTx->USART_DR = (*pTxBuffer & (uint16_t)DR_2BITS_MASKING_TO_LOAD_9BITS);
 
 				//check for USART_ParityControl
+				//HA: no need for parity checking, Parity is done by hardware
 				if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
 				{
 					//No parity is used in this transfer. so, 9bits of user data will be sent
@@ -399,7 +400,7 @@ Tx_or_Rx_Feedback TransmitDoneFeedback(void)
 				Local_pUSARTx->USART_DR = (*Global_pTxData  & (uint8_t)TRANSFER_8BITS);
 
 				//Implement the code to increment the buffer address
-				Global_pTxData++;
+				Global_pTxData++; // HA: no need to move the poiner, u can just use the Tx_Counter for indexing
 
 			}
 			TX_Counter ++;

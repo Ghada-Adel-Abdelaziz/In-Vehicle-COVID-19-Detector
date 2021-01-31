@@ -37,7 +37,7 @@ void USART_Init(void);
  */
 void USART_SendDataRequest(uint8_t USART_ID , const uint8_t *pTxBuffer, uint32_t Len);
 Tx_or_Rx_Feedback TransmitDoneFeedback(void);
-void USART_ReceiveDataRequest(uint8_t USART_ID, const uint8_t *pRxBuffer, uint32_t LenR);
+void USART_ReceiveDataRequest(uint8_t USART_ID, const uint8_t *pRxBuffer, uint32_t LenR);//HA constant need to be removed
 Tx_or_Rx_Feedback ReceiveDoneFeedback(void);
 uint8_t USART_SendDataIT(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len);
 uint8_t USART_ReceiveDataIT(uint8_t USART_ID , uint8_t *pTxBuffer, uint32_t Len);
