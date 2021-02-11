@@ -1,0 +1,28 @@
+/*
+ * ADC.h
+ *
+ *  Created on: Jan 17, 2021
+ *      Author: mas
+ */
+
+#ifndef ADC_H_
+#define ADC_H_
+#include "stm32f4xxx.h"
+
+
+/* Interrupt sources */
+
+#define ADC_IT_EOC         ((uint8_t)0x05)
+
+
+void ADC_Init(void);
+//void ADC_RegularChannelConfig(uint8_t ADC_ID, uint8_t ch_num, uint8_t rank, uint8_t sample_time);
+void ADC_RegularChannelConfig(void);
+void ADC_SoftwareStartConv(uint8_t ADC_ID);
+void ADC_EOCOnEachRegularChannelCmd(uint8_t ADC_ID, uint8_t State);
+uint16_t ADC_GetConversionValue(uint8_t ADC_ID);
+
+void ADC_IntControl(uint8_t ADC_ID , uint8_t IntSource , uint8_t State);
+void ADC_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi);
+
+#endif /* ADC_H_ */
