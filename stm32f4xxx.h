@@ -1,13 +1,17 @@
-//DEFINING MACROS FOR PERIPHERALS AND MEMORY UNIT
+/*
+ * stm32f4xx.h
+ *
+ *  Created on: Dec 30, 2020
+ *      Author: Toqa & Ghada
+ */
 
-
-#ifndef INC_STM32F407XX_H_
-
-#define INC_STM32F407XX_H_
+#ifndef STM32F4XXX_H_
+#define STM32F4XXX_H_
 
 #include <stdint.h>
 
 #define __vol volatile
+
 
 //ARM cortex M4 processor NVIC ISERx register address
 
@@ -16,6 +20,12 @@
 #define NVIC_ISER1    ((__vol uint32_t*)0xE000E104)
 #define NVIC_ISER2    ((__vol uint32_t*)0xE000E108)
 #define NVIC_ISER3    ((__vol uint32_t*)0xE000E10C)
+
+/***************** NEW ***************************/
+
+#define NVIC_ISER_Base_Addr    ((__vol uint32_t*)0xE000E100)
+#define NVIC_ICER_Base_Addr    ((__vol uint32_t*)0xE000E180)
+/*************************************************/
 
 //ICER interrupt disable register base address
 #define NVIC_ICER0    ((__vol uint32_t*)0xE000E180)
@@ -107,8 +117,12 @@
 
 #define USART1_ADDR (APB2_PERIADDR + 0X1000)
 #define USART6_ADDR (APB2_PERIADDR + 0X1400)
+/*ADC Address*/
+//#define ADC123_ADDR (APB2_PERIADDR + 0X2000)
 
-#define ADC123_ADDR (APB2_PERIADDR + 0X2000)
+#define ADC1_BASE             (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2000 )
+#define ADC2_BASE             (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2100 )
+#define ADC3_BASE             (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2200 )
 
 #define SDIO_ADDR (APB2_PERIADDR + 0X2C00)
 
@@ -132,7 +146,6 @@
 
 /*
 //SPI1 REGISTER BASE ADDRESS
-
 #define SPI_CR1 (SPI1_ADDR + 0X00)
 #define SPI_CR2 (SPI1_ADDR + 0X04)
 #define SPI_SR  (SPI1_ADDR + 0X08)
@@ -226,18 +239,18 @@ typedef struct
 
 //SPI peripheral structure definition
 
-typedef struct
-{
-	__vol uint32_t SPI_CR1;
-	__vol uint32_t SPI_CR2;
-	__vol uint32_t SPI_SR;
-	__vol uint32_t SPI_DR;
-	__vol uint32_t SPI_CPCPR;
-	__vol uint32_t SPI_RXCRCR;
-	__vol uint32_t SPI_TXCRCR;
-	__vol uint32_t SPI_I2SCFGR;
-	__vol uint32_t SPI_I2SPR;
-}SPI_RegDef_t;
+//typedef struct
+//{
+//	__vol uint32_t SPI_CR1;
+//	__vol uint32_t SPI_CR2;
+//	__vol uint32_t SPI_SR;
+//	__vol uint32_t SPI_DR;
+//	__vol uint32_t SPI_CPCPR;
+//	__vol uint32_t SPI_RXCRCR;
+//	__vol uint32_t SPI_TXCRCR;
+//	__vol uint32_t SPI_I2SCFGR;
+//	__vol uint32_t SPI_I2SPR;
+//}SPI_RegDef_t;
 
 /*
  * UART peripheral structure definition
@@ -245,21 +258,37 @@ typedef struct
 
 typedef struct
 {
-	__vol uint16_t USART_SR;
-	uint16_t      RESERVED0;
-	__vol uint16_t USART_DR;
-	uint16_t      RESERVED1;
-	__vol uint16_t USART_BRR;
-	uint16_t      RESERVED2;
-	__vol uint16_t USART_CR1;
-	uint16_t      RESERVED3;
-	__vol uint16_t USART_CR2;
-	uint16_t      RESERVED4;
-	__vol uint16_t USART_CR3;
-	uint16_t      RESERVED5;
-	__vol uint16_t USART_GTPR;
-	uint16_t      RESERVED6;
+	__vol uint32_t USART_SR;
+	__vol uint32_t USART_DR;
+	__vol uint32_t USART_BRR;
+	__vol uint32_t USART_CR1;
+	__vol uint32_t USART_CR2;
+	__vol uint32_t USART_CR3;
+	__vol uint32_t USART_GTPR;
 }USART_RegDef_t;
+
+typedef struct
+{
+	__vol uint32_t ADC_SR;
+	__vol uint32_t ADC_CR1;
+	__vol uint32_t ADC_CR2;
+	__vol uint32_t ADC_SMPR1;
+	__vol uint32_t ADC_SMPR2;
+	__vol uint32_t ADC_JOFRx;
+	__vol uint32_t ADC_HTR;
+	__vol uint32_t ADC_LTR;
+	__vol uint32_t ADC_SQR1;
+	__vol uint32_t ADC_SQR2;
+	__vol uint32_t ADC_SQR3;
+	__vol uint32_t ADC_JSQR;
+	__vol uint32_t ADC_JDRx;
+	__vol uint32_t ADC_DR;
+	__vol uint32_t ADC_CSR;
+	__vol uint32_t ADC_CCR;
+	__vol uint32_t ADC_CDR;
+
+
+}ADC_RegDef_t;
 
 /*GPIO defintion */
 
@@ -292,6 +321,9 @@ typedef struct
 /*RCC DEFINITION*/
 
 #define RCC     ((RCC_regdef_t*)RCC_BASEADDR)
+/*ADC DEFINITION*/
+#define ADC     ((ADC_RegDef_t*)ADC123_ADDR)
+
 
 //EXTI DEFINITION
 #define EXTI   ((EXTI_regdef_t*)EXTI_ADDR)
@@ -309,6 +341,15 @@ typedef struct
 #define GPIOG_PCLK_EN  (RCC -> AHB1ENR |= (1 << 6))
 #define GPIOH_PCLK_EN  (RCC -> AHB1ENR |= (1 << 7))
 #define GPIOI_PCLK_EN  (RCC -> AHB1ENR |= (1 << 8))
+
+
+/************* NEW *********************/
+#define GPIO_PCLK_EN   RCC->AHB1ENR
+#define NUM_OF_GPIO		9
+#define ADC_PCLK_EN   RCC->APB2ENR
+//#define ADC_EN        ADC->ADC_CR2
+/***************************************/
+
 
 //GPIO clock disable macro
 #define GPIOA_PCLK_DI  (RCC -> AHB1ENR &= ~(1 << 0))
@@ -340,8 +381,16 @@ typedef struct
 #define USART5_PCLK_EN  (RCC -> APB1ENR |= (1 << 20))
 #define USART6_PCLK_EN  (RCC -> APB2ENR |= (1 << 5))
 
-//uart TE enable
-#define USART2_TE_ENABLE  (USART2 -> USART_CR1 |= (1 << 3))
+
+/*************** NEW **************************/
+
+#define NUM_OF_UART		6
+#define USART_PCLK_1_6_EN    RCC -> APB2ENR
+#define USART_PCLK_2_TO_5_EN  RCC -> APB1ENR
+
+/**********************************************/
+
+
 //UART peripheral clock DISABLE MACRO
 #define USART1_PCLK_DI  (RCC -> APB2ENR &= ~(1 << 4))
 #define USART2_PCLK_DI  (RCC -> APB1ENR &= ~(1 << 17))
@@ -418,7 +467,15 @@ typedef struct
 #define USART_SR_TXE   7
 #define USART_SR_LBD   8
 #define USART_SR_CTS   9
-
+//Bit position macro for ADC control register 1,2
+#define ADC_CR1_ADON     0
+#define ADC_CR2_ALIGN    11
+#define ADC_CCR_PRE      16
+#define ADC_CCR_RES      24
+#define ADC_CR1_JEOCIE   7
+#define ADC_CR1_EOCIE    5
+#define ADC_CR1_JEXTEN   20
+#define ADC_CR1_EXTEN    28
 //Bit position macro for USART control register 1,2,3
 
 #define USART_CR1_SBK     0
@@ -477,6 +534,14 @@ typedef struct
 #define GPIOH_REG_RESET()    do{ (RCC->AHB1RSTR |= (1 << 7)); (RCC->AHB1RSTR &= ~(1 << 7));  }while(0)
 #define GPIOI_REG_RESET()    do{ (RCC->AHB1RSTR |= (1 << 8)); (RCC->AHB1RSTR &= ~(1 << 8));  }while(0)
 
+
+/****************** NEW ******************************/
+
+#define GPIO_RESET_REG   RCC->AHB1RSTR
+
+/*******************************************************/
+
+
 #define GPIO_BASEADDR_TO_CODE(x) ((x == GPIOA)?0:\
 		                          (x == GPIOB)?1:\
 		                          (x == GPIOC)?2:\
@@ -486,50 +551,5 @@ typedef struct
 		                          (x == GPIOA)?6:\
 		                          (x == GPIOB)?7:0 )
 
-//IRQ Number for stm32f407xx MCU
 
-#define IRQ_NO_EXTI0    6
-#define IRQ_NO_EXTI1    7
-#define IRQ_NO_EXTI2    8
-#define IRQ_NO_EXTI3    9
-#define IRQ_NO_EXTI4    10
-#define IRQ_NO_EXTI9_5  23
-#define IRQ_NO_EXTI15_10  40
-
-/************* NEW *********************/
-#define GPIO_PCLK_EN   RCC->AHB1ENR
-#define NUM_OF_GPIO		9
-#define ADC_PCLK_EN   RCC->APB2ENR
-#define ADC_EN        ADC->ADC_CR2
-/***************************************/
-/****************** NEW ******************************/
-
-#define GPIO_RESET_REG   RCC->AHB1RSTR
-
-/*******************************************************/
-
-/*************** NEW **************************/
-
-#define NUM_OF_UART		6
-#define USART_PCLK_1_6_EN    RCC -> APB2ENR
-#define USART_PCLK_2_TO_5_EN  RCC -> APB1ENR
-
-/**********************************************/
-
-
-//Generic macros
-#define ENABLE   1
-#define DISABLE  0
-#define SET   ENABLE
-#define RESET DISABLE
-#define GPIO_PIN_SET  SET
-#define GPIO_PIN_RESET  RESET
-#define FLAG_SET    SET
-#define FLAG_RESET  RESET
-
-
-#include "GPIO.h"
-#include "UART_Driver.h"
-#include "RCC_Driver.h"
-
-#endif /* INC_STM32F407XX_H_ */
+#endif /* STM32F4XXX_H_ */

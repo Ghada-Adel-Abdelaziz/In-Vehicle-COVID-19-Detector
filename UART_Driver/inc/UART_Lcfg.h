@@ -2,7 +2,7 @@
  * UART_Lcfg.h
  *
  *  Created on: Jan 16, 2021
- *      Author: mas
+ *      Author: Ghada & Toqa
  */
 
 #ifndef UART_LCFG_H_
