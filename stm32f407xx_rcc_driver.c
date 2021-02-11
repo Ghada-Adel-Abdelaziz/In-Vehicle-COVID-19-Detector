@@ -1,12 +1,12 @@
 /*
  * stm32f407xx_rcc_driver.c
  *
- *  Created on: 18-Jun-2020
- *      Author: Selva Kumar
+ *  Created on: 2-JAn-2021
+ *      Author: TOQA&GHADA
  */
 
 
-#include "stm32f407xx_rcc_driver.h"
+#include "RCC_Driver.h"
 
 
 uint16_t AHB_PreScaler[8] = {2,4,8,16,64,128,256,512};
@@ -118,5 +118,29 @@ uint32_t RCC_GetPCLK2Value(void)
 uint32_t  RCC_GetPLLOutputClock()
 {
 
-	return 0;
+	uint32_t tmp = 0, presc = 0, pllvco = 0, pllp = 2, pllsource = 0, pllm = 2;
+
+
+	 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLLM) * PLLN
+	         SYSCLK = PLL_VCO / PLLP
+	         */
+	      pllsource = (RCC->PLLCFGR & ((uint32_t)0x00400000)) >> 22;
+	      pllm = RCC->PLLCFGR & ((uint32_t)0x0000003F);
+
+	      if (pllsource != 0)
+	      {
+	        /* HSE used as PLL clock source */
+	        pllvco = (((uint32_t)8000000) / pllm) * ((RCC->PLLCFGR & ((uint32_t)0x00007FC0)) >> 6);
+	      }
+	      else
+	      {
+	        /* HSI used as PLL clock source */
+	        pllvco = (((uint32_t)16000000) / pllm) * ((RCC->PLLCFGR & ((uint32_t)0x00007FC0)) >> 6);
+	      }
+
+	      pllp = (((RCC->PLLCFGR & ((uint32_t)0x00030000)) >>16) + 1 ) *2;
+
+          return  pllvco/pllp;
+
+	//return 0;
 }
