@@ -38,6 +38,10 @@
 #define USART_2_TO_5_APB1ENR_REG_OFFEST              17
 #define USART_1_APB2ENR_REG_OFFEST                   4
 
+#define UART_SET_BAUDRATE_FOR_OVER8               (uint8_t)0x07
+#define UART_SET_BAUDRATE_FOR_OVER16              (uint8_t)0x0F
+
+/**************************** END*****************************************/
 
 #define DR_2BITS_MASKING_TO_LOAD_9BITS             0x01FF
 #define DR_2BITS_MASKING_TO_READ_9BITS             0x01FF
@@ -193,32 +197,32 @@ void USART_SetBaudRate(uint8_t USART_ID, uint32_t BaudRate)
 	if(pUSARTx->USART_CR1 & (One_bit_shift << USART_CR1_OVER8))
 	{
 		//OVER8 = 1 , over sampling by 8
-		usartdiv = ((25 * PCLKx) / (2 *BaudRate));
+		usartdiv = ((UART_FRACTION_GET_MUL_SUB * PCLKx) / (UART_NUMBER_OF_SAMPLES_SUB_FOR_OVER8 *BaudRate));
 	}else
 	{
 		//over sampling by 16
-		usartdiv = ((25 * PCLKx) / (4 *BaudRate));
+		usartdiv = ((UART_FRACTION_GET_MUL_SUB * PCLKx) / (UART_NUMBER_OF_SAMPLES_SUB_FOR_OVER16 *BaudRate));
 	}
 
 	//Calculate the Mantissa part
-	M_part = usartdiv/100;
+	M_part = usartdiv/UART_FRACTION_GET_DIV;
 
 	//Place the Mantissa part in appropriate bit position . refer USART_BRR
-	tempreg |= M_part << 4;
+	tempreg |= M_part << UART_BAUDRATE_INT_OFFSET;
 
 	//Extract the fraction part
-	F_part = (usartdiv - (M_part * 100));
+	F_part = (usartdiv - (M_part * UART_FRACTION_GET_MUL));
 
 	//Calculate the final fractional
 	if(pUSARTx->USART_CR1 & ( One_bit_shift << USART_CR1_OVER8))
 	{
 		//OVER8 = 1 , over sampling by 8
-		F_part = ((( F_part * 8)+ 50) / 100)& ((uint8_t)0x07);
+		F_part = ((( F_part * UART_BAUDRATE_FRACTION_MUL_FOR_OVER8)+ UART_BAUDRATE_ROUND_VALUE) / UART_FRACTION_GET_DIV)& (UART_SET_BAUDRATE_FOR_OVER8);
 
 	}else
 	{
 		//over sampling by 16
-		F_part = ((( F_part * 16)+ 50) / 100) & ((uint8_t)0x0F);
+		F_part = ((( F_part * UART_BAUDRATE_FRACTION_MUL_FOR_OVER16)+ UART_BAUDRATE_ROUND_VALUE) / UART_FRACTION_GET_DIV) & (UART_SET_BAUDRATE_FOR_OVER16);
 
 	}
 
@@ -357,8 +361,6 @@ void USART_Init(void)
 
 /**************NEW(26/1/2021)***********/
 
-
-//static USART_RegDef_t *Global_pUSARTx;
 
 void USART_SendDataRequest(uint8_t USART_ID , const uint8_t *pTxBuffer, uint32_t Len)
 {
@@ -617,86 +619,8 @@ uint8_t Uart_ReceiveDataASync(uint8_t Id , uint8_t* Data)
 }
 
 /*******************************   END   *********************************/
-/*********************************************************************
- * @fn      		  - USART_SendDataWithIT
- *
- * @brief             -
- *
- * @param[in]         -
- * @param[in]         -
- * @param[in]         -
- *
- * @return            -
- *
- * @Note              -
- */
-uint8_t USART_SendDataIT(uint8_t USART_ID, uint8_t *pTxBuffer, uint32_t Len)
-{
-	USART_RegDef_t *pUSARTx = USART_Arr[USART_ID];
-	uint8_t TxBusyState;
-	uint8_t txstate = TxBusyState;
-
-	if(txstate != USART_BUSY_IN_TX)
-	{
-		uint32_t TxLen = Len;
-		uint8_t pTxBuffer = pTxBuffer;
-		uint8_t TxBusyState = USART_BUSY_IN_TX;
-
-		//Implement the code to enable interrupt for TXE
-		pUSARTx->USART_CR1 |= ( One_bit_shift << USART_CR1_TXEIE);
 
 
-		//Implement the code to enable interrupt for TC
-		pUSARTx->USART_CR1 |= ( One_bit_shift << USART_CR1_TCIE);
-
-
-	}
-
-	return txstate;
-}
-
-
-
-/*********************************************************************
- * @fn      		  - USART_ReceiveDataWithIT
- *
- * @brief             -
- *
- * @param[in]         -
- * @param[in]         -
- * @param[in]         -
- *
- * @return            -
- *
- * @Note              -
- */
-uint8_t USART_ReceiveDataIT(uint8_t USART_ID,uint8_t *pRxBuffer, uint32_t Len)
-{
-	USART_RegDef_t *pUSARTx = USART_Arr[USART_ID];
-	uint8_t RxBusyState;
-	uint8_t rxstate = RxBusyState;
-
-	if(rxstate != USART_BUSY_IN_RX)
-	{
-		uint32_t RxLen = Len;
-		uint8_t pRxBuffer = pRxBuffer;
-		uint8_t RxBusyState = USART_BUSY_IN_RX;
-
-		(void)pUSARTx->USART_DR;
-
-		//Implement the code to enable interrupt for RXNE
-		pUSARTx->USART_CR1 |= ( One_bit_shift << USART_CR1_RXNEIE);
-
-	}
-
-	return rxstate;
-}
-
-
-
-
-
-// not finished
 void Uart_IntControl(uint8_t USART_ID , uint8_t IntSource , uint8_t State)
 {
 	USART_RegDef_t *pUSARTx = USART_Arr[USART_ID];
