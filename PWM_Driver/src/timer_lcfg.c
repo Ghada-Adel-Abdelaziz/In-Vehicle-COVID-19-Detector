@@ -2,7 +2,7 @@
  * timer_lcfg.c
  *
  *  Created on: Feb 27, 2021
- *      Author: esraa
+ *      Author: Toqa & Ghada
  */
 
 
@@ -20,7 +20,7 @@ TIM_Config_t TIM_ConfigArray[NUMBER_OF_CONFIGURED_TIMER] =
 
 TIM_OC_Config_t OC_ConfigArray[NUMBER_OF_CONFIGURED_CHANNEL] =
 {
-		{CH1_ID, TIMER2_, TIM_OCMode_PWM1, 0, TIM_OCPolarity_Low, TIM_OutputState_Enable}
+		{CH1_ID, TIMER2_, TIM_OCMode_PWM1, 1000, TIM_OCPolarity_Low, TIM_OutputState_Enable}
 };
 
 /* Timer2 connected in APB1 bus which its clock is 42MHz
@@ -36,4 +36,4 @@ TIM_OC_Config_t OC_ConfigArray[NUMBER_OF_CONFIGURED_CHANNEL] =
  * */
 
 
-// 83 to get Ttick 1 micro
+// 83 to get Ttick 1 micro sec.

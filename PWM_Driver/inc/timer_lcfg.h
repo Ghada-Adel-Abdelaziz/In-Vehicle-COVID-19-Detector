@@ -2,7 +2,7 @@
  * timer_lcfg.h
  *
  *  Created on: Feb 27, 2021
- *      Author: esraa
+ *      Author: Toqa & Ghada
  */
 
 #ifndef TIMER_LCFG_H_

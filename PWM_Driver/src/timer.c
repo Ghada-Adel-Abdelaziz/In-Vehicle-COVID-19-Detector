@@ -2,7 +2,7 @@
  * timer.c
  *
  *  Created on: Feb 27, 2021
- *      Author: esraa
+ *      Author: Toqa & Ghada
  */
 
 #include "timer.h"
@@ -426,8 +426,6 @@ void TIM3_IRQHandler(void)
 	if( TIM_GetFlagStatus(TIMER3_ , UPD_EVENT_INT_FLAG) == 1)
 	{
 		x++;
-
-
 		pTIMx->SR &= ~(1 << UPD_EVENT_INT_FLAG);     // this flag must be cleared here as per data sheet page 634
 	}
 }
