@@ -484,8 +484,6 @@ void UART_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)
 
 void USART2_IRQHandler(void)
 {
-	//	volatile uint8_t Local_SR=0;
-	//	Local_SR=USART_Arr[USART2_]->USART_SR;
 
 	/* Handling RX */
 	if ( USART_GetFlagStatus(USART2_,USART_FLAG_RXNE) == 1)
