@@ -505,7 +505,7 @@ void USART2_IRQHandler(void)
 		}
 
 	}
-
+	
 	/* Handling TX */
 	else if(USART_GetFlagStatus(USART2_,USART_FLAG_TXE) == 1)
 	{
