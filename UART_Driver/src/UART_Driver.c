@@ -1,9 +1,10 @@
-/*
- * stm32f407xx_uartdriver.c
- *
- *  Created on: 15-Jun-2020
- *      Author: Ghada & Toqa
- */
+/******************************************************************************
+ * Module:      UART
+ * File Name:   UART_Driver.c
+ * Description: Source file for UART Module on STM32F407 Microcontroller
+ * Author:      Toqa & Ghada
+ * Date:        16/1/2021
+ ******************************************************************************/
 
 #include "Common_Macros.h"
 #include "UART_Driver.h"
@@ -361,89 +362,6 @@ void USART_Init(void)
 
 /**************NEW(26/1/2021)***********/
 
-
-void USART_SendDataRequest(uint8_t USART_ID , const uint8_t *pTxBuffer, uint32_t Len)
-{
-	gUSART_ID = USART_ID;
-	Global_pTxData = pTxBuffer;
-	Global_Len = Len;
-	TransmitRequest = 1;
-}
-
-Tx_or_Rx_Feedback TransmitDoneFeedback(void)
-{
-	static USART_RegDef_t *Local_pUSARTx;
-	Local_pUSARTx = USART_Arr[gUSART_ID];
-	static const uint16_t *pTxBuffer;
-	//static Tx_or_Rx_Feedback TC_FlagState = FALSE;
-	static uint32_t TX_Counter = 0;
-
-	pTxBuffer = (uint16_t *)Global_pTxData;
-
-	uint32_t i = 0;
-
-	switch(MemState)
-	{
-	case IDLE :
-		if(TransmitRequest == 1)
-		{
-			TransmitRequest = 0;
-			MemState = TX_IN_PROGRESS;
-		}
-		break;
-	case TX_IN_PROGRESS :
-		if(  USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_TXE) )
-		{
-			if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)
-			{
-				//if 9BIT, load the DR with 2bytes masking the bits other than first 9 bits
-				Local_pUSARTx->USART_DR = (*pTxBuffer & (uint16_t)DR_2BITS_MASKING_TO_LOAD_9BITS);
-
-				//check for USART_ParityControl
-				if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
-				{
-					//No parity is used in this transfer. so, 9bits of user data will be sent
-					//Implement the code to increment pTxBuffer twice
-					Global_pTxData++;
-					Global_pTxData++;
-				}
-				else
-				{
-					//Parity bit is used in this transfer . so , 8bits of user data will be sent
-					//The 9th bit will be replaced by parity bit by the hardware
-					Global_pTxData++;
-				}
-			}
-			else
-			{
-
-				//This is 8bit data transfer
-				Local_pUSARTx->USART_DR = (*Global_pTxData  & (uint8_t)TRANSFER_8BITS);
-
-				//Implement the code to increment the buffer address
-				Global_pTxData++;
-
-			}
-			TX_Counter ++;
-		}
-		break;
-	}
-
-
-
-	if(TX_Counter >= Global_Len)
-	{
-		TX_Counter = 0;
-		MemState = IDLE;
-		//TC_FlagState = TRUE;
-		return TRUE;
-
-	}
-	return FALSE;
-
-}
-
-
 /*********************************************************************
  * @fn      		  - USART_ReceiveData
  *
@@ -459,108 +377,6 @@ Tx_or_Rx_Feedback TransmitDoneFeedback(void)
 
  */
 
-void USART_ReceiveDataRequest(uint8_t USART_ID, const uint8_t *pRxBuffer, uint32_t LenR)
-{
-	gUSART_ID_R = USART_ID;
-	Global_pRxData = pRxBuffer;
-	Global_LenR = LenR;
-	ReceivetRequest = 1;
-}
-
-Tx_or_Rx_Feedback ReceiveDoneFeedback(void)
-{
-	static USART_RegDef_t *Local_pUSARTx;
-	Local_pUSARTx = USART_Arr[gUSART_ID_R];
-	const uint16_t *pRxBuffer;
-	static uint32_t RX_Counter = 0;
-	pRxBuffer = (uint16_t *)Global_pRxData;
-
-
-	uint32_t i = 0;
-
-	switch(MemState_R)
-	{
-	case IDLE :
-		if(ReceivetRequest == 1)
-		{
-			ReceivetRequest = 0;
-			MemState_R = RX_IN_PROGRESS;
-		}
-		break;
-	case RX_IN_PROGRESS :
-
-		if ( USART_GetFlagStatus(UART_ConfigArray[i].USART_ID,USART_FLAG_RXNE))
-		{
-			//Check the USART_WordLength to decide whether we are going to receive 9bit of data in a frame or 8 bit
-			if(UART_ConfigArray[i].USART_WordLength == USART_WORDLEN_9BITS)
-			{
-				//We are going to receive 9bit data in a frame
-
-				//check are we using USART_ParityControl control or not
-				if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
-				{
-					//No parity is used. so, all 9bits will be of user data
-
-					//read only first 9 bits. so, mask the DR with 0x01FF
-
-					*((uint16_t*) Global_pRxData) = (Local_pUSARTx->USART_DR  & (uint16_t)DR_2BITS_MASKING_TO_READ_9BITS);
-
-					//Now increment the pRxBuffer two times
-					Global_pRxData++;
-					Global_pRxData++;
-				}
-				else
-				{
-					//Parity is used, so, 8bits will be of user data and 1 bit is parity
-					*Global_pRxData = (Local_pUSARTx->USART_DR  & (uint8_t)RECEIVE_8BITS);
-
-					//Increment the pRxBuffer
-					Global_pRxData++;
-				}
-			}
-			else
-			{
-				//We are going to receive 8bit data in a frame
-
-				//check are we using USART_ParityControl control or not
-				if(UART_ConfigArray[i].USART_ParityControl == USART_PARITY_DISABLE)
-				{
-					//No parity is used , so all 8bits will be of user data
-
-					//read 8 bits from DR
-					*Global_pRxData = Local_pUSARTx->USART_DR;
-				}
-
-				else
-				{
-					//Parity is used, so , 7 bits will be of user data and 1 bit is parity
-
-					//read only 7 bits , hence mask the DR with 0X7F
-					*Global_pRxData = (Local_pUSARTx->USART_DR & (uint8_t) DR_MASKING_TO_READ_7BITS);
-
-				}
-
-				//increment the pRxBuffer
-				Global_pRxData++;
-			}
-			RX_Counter ++;
-		}
-		break;
-	}
-	if(RX_Counter >= Global_LenR)
-	{
-		RX_Counter = 0;
-		MemState_R = IDLE;
-		return TRUE;
-
-	}
-	return FALSE;
-
-}
-
-
-
-
 /*************************** New with interrupt **************************/
 
 
@@ -568,21 +384,25 @@ uint8_t Uart_SendDataAsync(uint8_t Id , uint8_t* Data , uint16_t DataSize)
 {
 	uint8_t returnValue=UART_E_OK;
 
-		if(Uart_IntTxeDetails[Id].Flag==UART_TXE_NOT_BUSY)
-		{
-			/*set values for tx */
-			Uart_IntTxeDetails[Id].Data = Data;
-			Uart_IntTxeDetails[Id].DataSizeCounter = DataSize;
-			Uart_IntTxeDetails[Id].CurrentIndex = 0;
-			Uart_IntTxeDetails[Id].Flag = UART_TXE_BUSY;
+	if(Uart_IntTxeDetails[Id].Flag==UART_TXE_NOT_BUSY)
+	{
+		/*set values for tx */
+		Uart_IntTxeDetails[Id].Data = Data;
+		Uart_IntTxeDetails[Id].DataSizeCounter = DataSize;
+		Uart_IntTxeDetails[Id].CurrentIndex = 0;
+		Uart_IntTxeDetails[Id].Flag = UART_TXE_BUSY;
 
-			/*enable interrupt*/
-			Uart_IntControl(Id , UART_INT_TXE , ENABLE);
-		}
-		else
-		{
-			returnValue=UART_E_NOT_OK;
-		}
+		/*enable interrupt*/
+		Uart_IntControl(Id , UART_INT_TXE , ENABLE);
+
+		/* No need to send the first byte here to fire the interrupt as
+		 * after enabling the interrupt it will jump automatically to
+		 * the ISR as DR is empty (Architecture do this)*/
+	}
+	else
+	{
+		returnValue=UART_E_NOT_OK;
+	}
 
 	return returnValue;
 }
@@ -590,31 +410,22 @@ uint8_t Uart_SendDataAsync(uint8_t Id , uint8_t* Data , uint16_t DataSize)
 
 
 
-uint8_t Uart_ReceiveDataASync(uint8_t Id , uint8_t* Data)
+uint8_t Uart_ReceiveDataASync(uint8_t Id , uint8_t* Data, uint16_t DataSize)
 {
 	uint8_t returnValue = UART_E_OK;
-	/*check the id*/
-	if(Id>NUMBER_OF_CONFIGURED_UART)
+	if(Uart_IntRxDetails[Id].Flag == UART_RXE_NOT_BUSY)
 	{
-		returnValue=UART_E_NOT_OK;
+		/*set values for tx */
+		Uart_IntRxDetails[Id].Data = Data;
+		Uart_IntRxDetails[Id].DataSizeCounter = DataSize;
+		Uart_IntRxDetails[Id].CurrentIndex = 0;
+		Uart_IntRxDetails[Id].Flag = UART_RXE_BUSY;
 	}
 	else
 	{
-		/*if there is new elements in the queue*/
-		if(Uart_IntRxDetails[Id].CurrentSize)
-		{
-			/*return the top of the queue*/
-			*Data=Uart_IntRxDetails[Id].Data[Uart_IntRxDetails[Id].CurrentIndex];
-
-			/*update index*/
-			Uart_IntRxDetails[Id].CurrentIndex=(Uart_IntRxDetails[Id].CurrentIndex+1)%(UART_RX_BUFFER_SIZE-1);
-			--Uart_IntRxDetails[Id].CurrentSize;
-		}
-		else
-		{
-			returnValue=UART_ERR_RX_NO_NEW_DATA;
-		}
+		returnValue=UART_E_NOT_OK;
 	}
+
 	return returnValue;
 }
 

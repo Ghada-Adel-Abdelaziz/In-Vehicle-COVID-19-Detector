@@ -12,14 +12,19 @@
 #define GPIO_CFG_H_
 
 /* number of configured pins which is the size of the configuration array of structures */
-#define NUMBER_OF_CONFIGURED_PINS  4
+#define NUMBER_OF_CONFIGURED_PINS  7
 
-#define LED0      GPIO_CHANNEL_D12
-#define LED1      GPIO_CHANNEL_D13
-//#define LED2      GPIO_CHANNEL_D15
-//#define LED3      GPIO_CHANNEL_D15
-#define trial_Tx    GPIO_CHANNEL_A2
-#define trial_Rx    GPIO_CHANNEL_A3
+#define GREEN_LED      	GPIO_CHANNEL_D12
+#define ORANGE_LED      GPIO_CHANNEL_D13
+#define RED_LED         GPIO_CHANNEL_D14
+#define BLUE_LED      	GPIO_CHANNEL_D15
+#define USART2_Tx    	GPIO_CHANNEL_A2
+#define USART2_Rx    	GPIO_CHANNEL_A3
+#define TIMER2_CH1    	GPIO_CHANNEL_A0
+#define ADC_CH1   	    GPIO_CHANNEL_A1
+
+
+
 /*********************/
 
 /*********************/

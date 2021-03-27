@@ -22,8 +22,10 @@ typedef enum
 }PIN_STATE;
 
 
-//GPIO pin modes
-//@GPIO PIN MODES
+/******************************************************************************************
+ *								APIs supported by this driver
+ *		 For more information about the APIs check the function definitions
+ ******************************************************************************************/
 
 void GPIO_Init(void);
 void GPIO_RESET(uint8_t PORT_num);
@@ -31,7 +33,6 @@ PIN_STATE GPIO_ReadInputPin(uint8_t Pin);
 uint16_t GPIO_ReadInputPort(uint8_t PORT_num);
 void GPIO_WriteOutputPin(uint8_t Pin, uint8_t Value);
 void GPIO_WriteOutputPort(uint8_t PORT_num, uint16_t Value);
-void GPIO_ToggleOutputPin(uint8_t PORT_num, uint8_t PinNumber);
 void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi);
 void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority);
 void GPIO_IRQHandling(uint8_t PinNumber);

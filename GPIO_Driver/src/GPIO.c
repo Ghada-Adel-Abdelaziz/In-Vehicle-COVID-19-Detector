@@ -52,8 +52,6 @@ static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnorDi);
 //void GPIO_PeriClockControl(GPIO_regdef_t *pGPIOx,uint8_t EnorDi)
 static void GPIO_PeriClockControl(uint8_t PORT_num,uint8_t EnCLK)
 {
-	//	GPIO_PCLK_EN &=~ (One_bit_shift << PORT_num);
-	//	GPIO_PCLK_EN |= (EnCLK << PORT_num);
 
 	GPIO_PCLK_EN =(GPIO_PCLK_EN & ~(One_bit_shift << PORT_num))
 			|(EnCLK << PORT_num);
@@ -183,18 +181,6 @@ void GPIO_RESET(uint8_t PORT_num)
 	return;
 
 }
-
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
-
-//uint8_t GPIO_ReadInputPin(GPIO_regdef_t *pGPIOx, uint8_t PinNumber)
 PIN_STATE GPIO_ReadInputPin(uint8_t Pin)
 {
 	uint8_t value;
@@ -211,17 +197,6 @@ PIN_STATE GPIO_ReadInputPin(uint8_t Pin)
 
 	return value;
 }
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
-
-//uint16_t GPIO_ReadInputPort(GPIO_regdef_t *pGPIOx)
 uint16_t GPIO_ReadInputPort(uint8_t PORT_num)
 {
 	uint16_t value;
@@ -231,17 +206,7 @@ uint16_t GPIO_ReadInputPort(uint8_t PORT_num)
 
 	return value;
 }
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
 
-//void GPIO_WriteOutputPin(GPIO_regdef_t *pGPIOx, uint8_t PinNumber, uint8_t Value)
 void GPIO_WriteOutputPin(uint8_t Pin, uint8_t Value)
 {
 
@@ -265,48 +230,12 @@ void GPIO_WriteOutputPin(uint8_t Pin, uint8_t Value)
 	}
 
 }
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
 
-//void GPIO_WriteOutputPort(GPIO_regdef_t *pGPIOx, uint16_t Value)
 void GPIO_WriteOutputPort(uint8_t PORT_num, uint16_t Value)
 {
 	GPIO_regdef_t *pGPIOx = GPIO_Arr[PORT_num];       //new
 	pGPIOx->ODR = Value;
 }
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
-
-//void GPIO_ToggleOutputPin(GPIO_regdef_t *pGPIOx, uint8_t PinNumber);
-void GPIO_ToggleOutputPin(uint8_t PORT_num, uint8_t PinNumber)
-{
-	GPIO_regdef_t *pGPIOx = GPIO_Arr[PORT_num];       // new
-	pGPIOx->ODR ^= (One_bit_shift << PinNumber);
-}
-/*init and De-init
-fn   -   GPIO_periclockcontrol
-brief -  This function enables or disables peripheral clock for the given GPIO port
-Parameter  -  Base address of the gpio peripheral
-Parameter  -  Enable or disable macros
-Parameter  -
-return     -
-Note       =
- */
-
 
 /*IRQ configuration and ISR handling
 fn   -   GPIO_periclockcontrol

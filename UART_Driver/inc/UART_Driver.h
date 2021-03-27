@@ -1,9 +1,10 @@
-/*
- * stm32f407xx_uartdriver.h
- *
- *  Created on: 15-Jun-2020
- *      Author: Ghada & Toqa
- */
+/******************************************************************************
+ * Module:      UART
+ * File Name:   UART.h
+ * Description: Header file for UART Module on STM32F407 Microcontroller
+ * Author:      Toqa & Ghada
+ * Date:        16/1/2021
+ ******************************************************************************/
 
 #ifndef INC_STM32F407XX_UARTDRIVER_H_
 #define INC_STM32F407XX_UARTDRIVER_H_
@@ -52,27 +53,12 @@ typedef enum
  ******************************************************************************************/
 
 
-/*
- * Init and De-init
- */
+/* Init  */
 void USART_Init(void);
-
-
-/*
- * Data Send and Receive
- */
-
-/*
- * Data Send and Receive
- */
-void USART_SendDataRequest(uint8_t USART_ID , const uint8_t *pTxBuffer, uint32_t Len);
-Tx_or_Rx_Feedback TransmitDoneFeedback(void);
-
-void USART_ReceiveDataRequest(uint8_t USART_ID, const uint8_t *pRxBuffer, uint32_t LenR);
-Tx_or_Rx_Feedback ReceiveDoneFeedback(void);
-
 void USART_SetBaudRate(uint8_t USART_ID, uint32_t BaudRate);
-
+/*
+ * Data Send and Receive
+ */
 
 /******************** NEW***************************/
 
