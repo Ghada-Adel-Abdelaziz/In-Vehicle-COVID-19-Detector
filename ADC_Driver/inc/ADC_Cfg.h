@@ -11,7 +11,7 @@
 #define ADC_CFG_H_
 
 
-#define NUMBER_OF_CONFIGURED_ADC    1
+#define NUMBER_OF_CONFIGURED_ADC      1
 #define NUMBER_OF_CONFIGURED_CHANNEL  1
 
 
