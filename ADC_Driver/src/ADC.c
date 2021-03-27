@@ -252,6 +252,10 @@ void ADC_EOCOnEachRegularChannelCmd(uint8_t ADC_ID, uint8_t State)
 
 uint16_t ADC_GetConversionValue(uint8_t ADC_ID)
 {
+	// HA Review: Conversion state should be checked before returning ressults 
+	// MOK-> conversion not requested
+	//Busy-> Conversion requested but not done.
+	//OK -> conversion result updated
 	ADC_RegDef_t *pADCx;
 	pADCx = ADC_Arr[ADC_ID];
 
@@ -262,6 +266,11 @@ uint16_t ADC_GetConversionValue(uint8_t ADC_ID)
 uint16_t ADC_getValue(uint8_t Ch_Num)
 {
 	uint8_t i = 0;
+	// HA Review: Conversion state should be checked before returning ressults 
+	// MOK-> conversion not requested
+	//Busy-> Conversion requested but not done.
+	//OK -> conversion result updated - ISR called
+	ADC_RegDef_t *pADCx;
 
 	for(i=0; i<NUMBER_OF_CONFIGURED_CHANNEL; i++)
 	{
@@ -322,7 +331,7 @@ void ADC_IRQHandler(void)
 	ADC_RegDef_t *pADCx;
 	pADCx = ADC_Arr[0];
 
-
+    //HA Review: To search for which channel fired the IRQ. Then update the reading buffer by the channel index
 	if( pADCx->ADC_SR & (One_bit_shift << ADC_EOC_BIT_LOCATION_IN_SR) )
 	{
 		//first check the end of conversion flag
