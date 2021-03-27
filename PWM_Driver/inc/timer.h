@@ -13,7 +13,7 @@
 /* Interrupt sources */
 #define TIM_UPDATE_EVENT_IE       ((uint8_t)0x00)
 
-
+//HA review: commented code is not allowed
 //typedef enum
 //{
 //	FLAG_RESET,

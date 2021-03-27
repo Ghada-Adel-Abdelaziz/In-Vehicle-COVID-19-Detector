@@ -108,7 +108,7 @@ static char TIM_GetFlagStatus(uint8_t TIM_ID , uint32_t FlagName)
 }
 
 
-
+//HA Review: function areguments type should be added explicitly
 void Timer_Init()
 {
 	//Temporary variable
@@ -117,7 +117,7 @@ void Timer_Init()
 	TIM_RegDef_t *pTIMx;
 	uint32_t temp = 0;  //temp register
 
-
+    //HA Review: Timer to be switched of before starting init
 	for(counter = 0; counter<NUMBER_OF_CONFIGURED_TIMER; counter++)
 	{
 		/***Implement the code to enable the Clock for given ADC peripheral***/
@@ -408,7 +408,8 @@ void TIM2_IRQHandler(void)
 
 	if( TIM_GetFlagStatus(TIMER2_ , UPD_EVENT_INT_FLAG) == 1)
 	{
-		GPIO_ToggleOutputPin(GPIOD_, RED_LED);
+		GPIO_ToggleOutputPin(GPIOD_, RED_LED); //HA review: test code to be removed
+		//HA review:callback to be added
 
 		pTIMx->SR &= ~(1 << UPD_EVENT_INT_FLAG);     // this flag must be cleared here as per data sheet page 634
 
