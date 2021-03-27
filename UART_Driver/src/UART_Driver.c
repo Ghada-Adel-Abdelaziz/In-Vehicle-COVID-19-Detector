@@ -101,6 +101,10 @@ Uart_TxDetails_t Uart_IntTxeDetails[NUMBER_OF_CONFIGURED_UART]={0};
 Uart_RxDetails_t Uart_IntRxDetails[NUMBER_OF_CONFIGURED_UART]={0};
 
 
+void (*TX_ptr[NUM_OF_UART])(void);
+void (*RX_ptr[NUM_OF_UART])(void);
+
+
 /************************   END **********************/
 
 /*
@@ -356,6 +360,9 @@ void USART_Init(void)
 
 		USART_SetBaudRate(UART_ConfigArray[counter].USART_ID ,UART_ConfigArray[counter].USART_Baud);
 
+		// callback functions initialization
+		TX_ptr[UART_ConfigArray[counter].USART_ID] = UART_ConfigArray[counter].TX_CompleteFunptr;
+		RX_ptr[UART_ConfigArray[counter].USART_ID] = UART_ConfigArray[counter].RX_CompleteFunptr;
 	}
 }
 
@@ -472,55 +479,55 @@ void UART_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)
 		break;
 	}
 }
-
 /*************************** USART1 IRQ handler *****************************/
 
 
 void USART2_IRQHandler(void)
 {
-//	volatile uint8_t Local_SR=0;
-//	Local_SR=USART_Arr[USART2_]->USART_SR;
-
-	GPIO_WriteOutputPin((uint8_t)61 , GPIO_PIN_SET);   // check if whether the code jump to ISR or not
+	//	volatile uint8_t Local_SR=0;
+	//	Local_SR=USART_Arr[USART2_]->USART_SR;
 
 	/* Handling RX */
-	if ( USART_GetFlagStatus(USART2_,USART_FLAG_RXNE))
+	if ( USART_GetFlagStatus(USART2_,USART_FLAG_RXNE) == 1)
 	{
-		/*receive data in the current empty position*/
-		Uart_IntRxDetails[0].Data[Uart_IntRxDetails[0].InsertIndex]=USART_Arr[USART2_]->USART_DR;
+		Uart_IntRxDetails[USART2_].Data[Uart_IntRxDetails[USART2_].CurrentIndex]=USART_Arr[USART2_]->USART_DR;
 
-		if(Uart_IntRxDetails[0].CurrentSize!=UART_RX_BUFFER_SIZE)
+
+		if(Uart_IntRxDetails[USART2_].CurrentIndex<Uart_IntRxDetails[USART2_].DataSizeCounter - 1)
 		{
-			++Uart_IntRxDetails[0].CurrentSize;
+			Uart_IntRxDetails[USART2_].CurrentIndex ++;
 		}
 		else
 		{
-			/*if the current element overwritten then take the next element*/
-			Uart_IntRxDetails[0].CurrentIndex=(Uart_IntRxDetails[0].CurrentIndex+1)%(UART_RX_BUFFER_SIZE-1);
+			Uart_IntRxDetails[USART2_].Flag = UART_RXE_NOT_BUSY;
+
+
+			RX_ptr[USART2_]();     // callback function to inform the user that the reception has finished
+
 		}
-		/*update the insert index*/
-		Uart_IntRxDetails[0].InsertIndex=(Uart_IntRxDetails[0].InsertIndex+1)%(UART_RX_BUFFER_SIZE-1);
+
 	}
 
 	/* Handling TX */
-	else if(USART_GetFlagStatus(USART2_,USART_FLAG_TXE))
+	else if(USART_GetFlagStatus(USART2_,USART_FLAG_TXE) == 1)
+	{
+		if(Uart_IntTxeDetails[USART2_].CurrentIndex < Uart_IntTxeDetails[USART2_].DataSizeCounter - 1)
 		{
-			if(Uart_IntTxeDetails[0].CurrentIndex<Uart_IntTxeDetails[0].DataSizeCounter)
-			{
-				USART_Arr[USART2_]->USART_DR=Uart_IntTxeDetails[0].Data[Uart_IntTxeDetails[0].CurrentIndex++];
-			}
-			else
-			{
-				/*Disable Interrupt*/
-				Uart_IntControl(USART2_ , UART_INT_TXE , DISABLE);
-
-				/*clear busy flag*/
-				Uart_IntTxeDetails[0].Flag = UART_TXE_NOT_BUSY;
-			}
+			USART_Arr[USART2_]->USART_DR = Uart_IntTxeDetails[USART2_].Data[Uart_IntTxeDetails[USART2_].CurrentIndex];
+			Uart_IntTxeDetails[USART2_].CurrentIndex++;
 		}
+		else
+		{
+			/*Disable Interrupt*/
+			Uart_IntControl(USART2_ , UART_INT_TXE , DISABLE);
+
+			/*clear busy flag*/
+			Uart_IntTxeDetails[USART2_].Flag = UART_TXE_NOT_BUSY;
 
 
-
+			TX_ptr[USART2_]();   // callback function to inform the user that the transmission has finished
+		}
+	}
 
 }
 

@@ -34,6 +34,8 @@ typedef struct
 	uint8_t USART_WordLength;
 	uint8_t USART_ParityControl;
 	uint8_t USART_HWFlowControl;
+	void (*TX_CompleteFunptr)(void);
+	void (*RX_CompleteFunptr)(void);
 }USART_Config_t;
 
 /*
@@ -76,13 +78,6 @@ typedef struct
  */
 #define USART_WORDLEN_8BITS  0
 #define USART_WORDLEN_9BITS  1
-
-
-//typedef enum
-//{
-//	SET,
-//	RESET
-//}FLAG_STATUS;
 
 /*
  *@USART_NoOfStopBits
