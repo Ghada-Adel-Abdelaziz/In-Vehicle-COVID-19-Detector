@@ -120,9 +120,11 @@
 /*ADC Address*/
 //#define ADC123_ADDR (APB2_PERIADDR + 0X2000)
 
-#define ADC1_BASE             (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2000 )
-#define ADC2_BASE             (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2100 )
-#define ADC3_BASE             (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2200 )
+#define ADC1_BASE         (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2000 )
+#define ADC2_BASE         (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2100 )
+#define ADC3_BASE         (ADC_RegDef_t *)( ((uint32_t)0x40000000) + 0x00010000 + 0x2200 )
+
+#define ADC_BASE          (ADC_Common_RegDef_t*)( ((uint32_t)0x40000000) + 0x00010000  + 0x2300)
 
 #define SDIO_ADDR (APB2_PERIADDR + 0X2C00)
 
@@ -274,21 +276,104 @@ typedef struct
 	__vol uint32_t ADC_CR2;
 	__vol uint32_t ADC_SMPR1;
 	__vol uint32_t ADC_SMPR2;
-	__vol uint32_t ADC_JOFRx;
+	__vol uint32_t ADC_JOFRx[4];
 	__vol uint32_t ADC_HTR;
 	__vol uint32_t ADC_LTR;
 	__vol uint32_t ADC_SQR1;
 	__vol uint32_t ADC_SQR2;
 	__vol uint32_t ADC_SQR3;
 	__vol uint32_t ADC_JSQR;
-	__vol uint32_t ADC_JDRx;
+	__vol uint32_t ADC_JDRx[4];
 	__vol uint32_t ADC_DR;
-	__vol uint32_t ADC_CSR;
-	__vol uint32_t ADC_CCR;
-	__vol uint32_t ADC_CDR;
-
+	//	__vol uint32_t ADC_CSR;
+	//	__vol uint32_t ADC_CCR;
+	//	__vol uint32_t ADC_CDR;
 
 }ADC_RegDef_t;
+
+typedef struct
+{
+	__vol uint32_t ADC_CSR;    /*!< ADC Common status register,                  Address offset: ADC1 base address + 0x300 */
+	__vol uint32_t ADC_CCR;    /*!< ADC common control register,                 Address offset: ADC1 base address + 0x304 */
+	__vol uint32_t ADC_CDR;    /*!< ADC common regular data register for dual
+                             AND triple modes,                            Address offset: ADC1 base address + 0x308 */
+} ADC_Common_RegDef_t;
+
+
+
+typedef struct
+{
+	__vol uint16_t CR1;         /*!< TIM control register 1,              Address offset: 0x00 */
+  uint16_t      RESERVED0;   /*!< Reserved, 0x02                                            */
+  __vol uint16_t CR2;         /*!< TIM control register 2,              Address offset: 0x04 */
+  uint16_t      RESERVED1;   /*!< Reserved, 0x06                                            */
+  __vol uint16_t SMCR;        /*!< TIM slave mode control register,     Address offset: 0x08 */
+  uint16_t      RESERVED2;   /*!< Reserved, 0x0A                                            */
+  __vol uint16_t DIER;        /*!< TIM DMA/interrupt enable register,   Address offset: 0x0C */
+  uint16_t      RESERVED3;   /*!< Reserved, 0x0E                                            */
+  __vol uint16_t SR;          /*!< TIM status register,                 Address offset: 0x10 */
+  uint16_t      RESERVED4;   /*!< Reserved, 0x12                                            */
+  __vol uint16_t EGR;         /*!< TIM event generation register,       Address offset: 0x14 */
+  uint16_t      RESERVED5;   /*!< Reserved, 0x16                                            */
+  __vol uint16_t CCMR1;       /*!< TIM capture/compare mode register 1, Address offset: 0x18 */
+  uint16_t      RESERVED6;   /*!< Reserved, 0x1A                                            */
+  __vol uint16_t CCMR2;       /*!< TIM capture/compare mode register 2, Address offset: 0x1C */
+  uint16_t      RESERVED7;   /*!< Reserved, 0x1E                                            */
+  __vol uint16_t CCER;        /*!< TIM capture/compare enable register, Address offset: 0x20 */
+  uint16_t      RESERVED8;   /*!< Reserved, 0x22                                            */
+  __vol uint32_t CNT;         /*!< TIM counter register,                Address offset: 0x24 */
+  __vol uint16_t PSC;         /*!< TIM prescaler,                       Address offset: 0x28 */
+  uint16_t      RESERVED9;   /*!< Reserved, 0x2A                                            */
+  __vol uint32_t ARR;         /*!< TIM auto-reload register,            Address offset: 0x2C */
+  __vol uint16_t RCR;         /*!< TIM repetition counter register,     Address offset: 0x30 */
+  uint16_t      RESERVED10;  /*!< Reserved, 0x32                                            */
+  __vol uint32_t CCR1;        /*!< TIM capture/compare register 1,      Address offset: 0x34 */
+  __vol uint32_t CCR2;        /*!< TIM capture/compare register 2,      Address offset: 0x38 */
+  __vol uint32_t CCR3;        /*!< TIM capture/compare register 3,      Address offset: 0x3C */
+  __vol uint32_t CCR4;        /*!< TIM capture/compare register 4,      Address offset: 0x40 */
+  __vol uint16_t BDTR;        /*!< TIM break and dead-time register,    Address offset: 0x44 */
+  uint16_t      RESERVED11;  /*!< Reserved, 0x46                                            */
+  __vol uint16_t DCR;         /*!< TIM DMA control register,            Address offset: 0x48 */
+  uint16_t      RESERVED12;  /*!< Reserved, 0x4A                                            */
+  __vol uint16_t DMAR;        /*!< TIM DMA address for full transfer,   Address offset: 0x4C */
+  uint16_t      RESERVED13;  /*!< Reserved, 0x4E                                            */
+  __vol uint16_t OR;          /*!< TIM option register,                 Address offset: 0x50 */
+  uint16_t      RESERVED14;  /*!< Reserved, 0x52                                            */
+} TIM_RegDef_t;
+
+
+
+
+/**
+  * @brief Inter-integrated Circuit Interface
+  */
+
+typedef struct
+{
+  __vol uint16_t CR1;        /*!< I2C Control register 1,     Address offset: 0x00 */
+  uint16_t      RESERVED0;  /*!< Reserved, 0x02                                   */
+  __vol uint16_t CR2;        /*!< I2C Control register 2,     Address offset: 0x04 */
+  uint16_t      RESERVED1;  /*!< Reserved, 0x06                                   */
+  __vol uint16_t OAR1;       /*!< I2C Own address register 1, Address offset: 0x08 */
+  uint16_t      RESERVED2;  /*!< Reserved, 0x0A                                   */
+  __vol uint16_t OAR2;       /*!< I2C Own address register 2, Address offset: 0x0C */
+  uint16_t      RESERVED3;  /*!< Reserved, 0x0E                                   */
+  __vol uint16_t DR;         /*!< I2C Data register,          Address offset: 0x10 */
+  uint16_t      RESERVED4;  /*!< Reserved, 0x12                                   */
+  __vol uint16_t SR1;        /*!< I2C Status register 1,      Address offset: 0x14 */
+  uint16_t      RESERVED5;  /*!< Reserved, 0x16                                   */
+  __vol uint16_t SR2;        /*!< I2C Status register 2,      Address offset: 0x18 */
+  uint16_t      RESERVED6;  /*!< Reserved, 0x1A                                   */
+  __vol uint16_t CCR;        /*!< I2C Clock control register, Address offset: 0x1C */
+  uint16_t      RESERVED7;  /*!< Reserved, 0x1E                                   */
+  __vol uint16_t TRISE;      /*!< I2C TRISE register,         Address offset: 0x20 */
+  uint16_t      RESERVED8;  /*!< Reserved, 0x22                                   */
+  __vol uint16_t FLTR;       /*!< I2C FLTR register,          Address offset: 0x24 */
+  uint16_t      RESERVED9;  /*!< Reserved, 0x26                                   */
+} I2C_RegDef_t;
+
+
+
 
 /*GPIO defintion */
 
@@ -316,6 +401,31 @@ typedef struct
 #define USART4  ((USART_RegDef_t*)USART4_ADDR)
 #define USART5  ((USART_RegDef_t*)USART5_ADDR)
 #define USART6  ((USART_RegDef_t*)USART6_ADDR)
+
+
+
+
+
+// time base addr
+
+#define TIMER2_BASE             (APB1_PERIADDR + 0x0000)
+#define TIMER3_BASE             (APB1_PERIADDR + 0x0400)
+#define TIMER4_BASE             (APB1_PERIADDR + 0x0800)
+#define TIMER5_BASE             (APB1_PERIADDR + 0x0C00)
+
+
+
+#define TIMER2                ((TIM_RegDef_t *) TIMER2_BASE)
+#define TIMER3                ((TIM_RegDef_t *) TIMER3_BASE)
+#define TIMER4                ((TIM_RegDef_t *) TIMER4_BASE)
+#define TIMER5                ((TIM_RegDef_t *) TIMER5_BASE)
+
+
+
+
+#define I2C1				  ( (I2C_RegDef_t *) I2C1_ADDR)
+#define I2C2				  ( (I2C_RegDef_t *) I2C2_ADDR)
+#define I2C3				  ( (I2C_RegDef_t *) I2C3_ADDR)
 
 
 /*RCC DEFINITION*/
@@ -347,7 +457,8 @@ typedef struct
 #define GPIO_PCLK_EN   RCC->AHB1ENR
 #define NUM_OF_GPIO		9
 #define ADC_PCLK_EN   RCC->APB2ENR
-//#define ADC_EN        ADC->ADC_CR2
+#define TIM_PCLK_EN	  RCC->APB1ENR
+#define I2C_PCLK_EN   RCC->APB1ENR
 /***************************************/
 
 
@@ -362,11 +473,13 @@ typedef struct
 #define GPIOH_PCLK_DI  (RCC -> AHB1ENR &= ~(1 << 7))
 #define GPIOI_PCLK_DI  (RCC -> AHB1ENR &= ~(1 << 8))
 
+
 //I2C peripheral clock enable MACRO (3 I2C)
 #define I2C1_PCLK_EN  (RCC -> APB1ENR |= (1 << 21))
 #define I2C2_PCLK_EN  (RCC -> APB1ENR |= (1 << 22))
 #define I2C3_PCLK_EN  (RCC -> APB1ENR |= (1 << 23))
 
+#define NUM_OF_I2C	   3
 //I2C peripheral clock disable macros
 
 #define I2C1_PCLK_DI  (RCC -> APB1ENR &= ~(1 << 21))
