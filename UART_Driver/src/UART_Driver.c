@@ -490,7 +490,7 @@ void USART2_IRQHandler(void)
 	{
 		Uart_IntRxDetails[USART2_].Data[Uart_IntRxDetails[USART2_].CurrentIndex]=USART_Arr[USART2_]->USART_DR;
 
-
+        //HA Review: use parenthesis
 		if(Uart_IntRxDetails[USART2_].CurrentIndex<Uart_IntRxDetails[USART2_].DataSizeCounter - 1)
 		{
 			Uart_IntRxDetails[USART2_].CurrentIndex ++;
@@ -509,6 +509,7 @@ void USART2_IRQHandler(void)
 	/* Handling TX */
 	else if(USART_GetFlagStatus(USART2_,USART_FLAG_TXE) == 1)
 	{
+		 //HA Review: use parenthesis
 		if(Uart_IntTxeDetails[USART2_].CurrentIndex < Uart_IntTxeDetails[USART2_].DataSizeCounter - 1)
 		{
 			USART_Arr[USART2_]->USART_DR = Uart_IntTxeDetails[USART2_].Data[Uart_IntTxeDetails[USART2_].CurrentIndex];
