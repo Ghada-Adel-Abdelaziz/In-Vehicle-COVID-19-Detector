@@ -1,10 +1,11 @@
-/*
- * I2C.c
- *
- *  Created on: Apr 2, 2021
- *      Author: esraa
- */
-
+/******************************************************************************
+ * Module: 		I2C
+ * File Name: 	I2C.c
+ * Description: I2C Source file for
+ * 				STM32F407 Microcontroller
+ * Author: 		Toqa & Ghada
+ * Date:		1/4/2021
+ ******************************************************************************/
 
 #include "I2C.h"
 #include "Common_Macros.h"
@@ -176,7 +177,7 @@ static void I2C_PeripheralControl(uint8_t I2C_ID, uint8_t Cmd)
 
 }
 
-static void ADC_PeriClockControl(uint8_t I2C_ID,uint8_t EnCLK)
+static void I2C_PeriClockControl(uint8_t I2C_ID,uint8_t EnCLK)
 {
 	I2C_PCLK_EN =(I2C_PCLK_EN & ~(One_bit_shift << I2C_ID+21)) | (EnCLK << I2C_ID+21);
 }

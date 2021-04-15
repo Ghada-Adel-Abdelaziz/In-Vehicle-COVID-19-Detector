@@ -64,7 +64,7 @@
 
 float analog_value = 0;
 
-uint16_t ADC_Readings[NUMBER_OF_CONFIGURED_CHANNEL] = {0};
+static uint16_t ADC_Readings[NUMBER_OF_CONFIGURED_CHANNEL] = {0};
 
 void (*Conv_ptr[NUM_OF_ADC])(void);
 

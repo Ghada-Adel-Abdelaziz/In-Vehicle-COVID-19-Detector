@@ -1,9 +1,11 @@
-/*
- * I2C.h
- *
- *  Created on: Apr 2, 2021
- *      Author: esraa
- */
+/******************************************************************************
+ * Module: 		I2C
+ * File Name: 	I2C.h
+ * Description: I2C header file for
+ * 				STM32F407 Microcontroller
+ * Author: 		Toqa & Ghada
+ * Date:		1/4/2021
+ ******************************************************************************/
 
 #ifndef I2C_H_
 #define I2C_H_
