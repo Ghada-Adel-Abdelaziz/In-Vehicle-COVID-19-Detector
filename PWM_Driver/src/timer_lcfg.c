@@ -10,7 +10,7 @@
 #include "timer.h"
 #include "timer_Lcfg.h"
 
-void LED1_ON(void)   // I2C TX complete
+void LED1_ON(void)   // TIMER2_ counting complete
 {
 	static char i = 0;
 	i++;
@@ -27,7 +27,7 @@ void LED1_ON(void)   // I2C TX complete
 
 }
 
-void LED2_ON(void)   // UART RX complete
+void LED2_ON(void)   // TIMER3_ counting complete
 {
 	static char i = 0;
 	i++;
@@ -42,7 +42,6 @@ void LED2_ON(void)   // UART RX complete
 		GPIO_WriteOutputPin(GREEN_LED,0);
 	}
 
-	Uart_SendDataAsync(USART2_,RX_Buffer,sizeof(RX_Buffer));
 }
 
 TIM_Config_t TIM_ConfigArray[NUMBER_OF_CONFIGURED_TIMER] =
