@@ -1,9 +1,11 @@
-/*
- * I2C_lcfg.c
- *
- *  Created on: Apr 2, 2021
- *      Author: esraa
- */
+/******************************************************************************
+ * Module: 		ADC
+ * File Name: 	ADC.c
+ * Description: ADC Source file for
+ * 				STM32F407 Microcontroller
+ * Author: 		Toqa & Ghada
+ * Date:		26/3/2021
+ ******************************************************************************/
 
 #include "I2C_lcfg.h"
 #include "I2C_cfg.h"
@@ -24,7 +26,7 @@ void LED1_ON(void)   // I2C TX complete
 
 }
 
-void LED2_ON(void)   // UART RX complete
+void LED2_ON(void)   // I2C RX complete
 {
 	static char i = 0;
 	i++;
@@ -39,7 +41,7 @@ void LED2_ON(void)   // UART RX complete
 		GPIO_WriteOutputPin(GREEN_LED,0);
 	}
 
-	Uart_SendDataAsync(USART2_,RX_Buffer,sizeof(RX_Buffer));
+	I2C_ReceiveDataASync(I2C_1, RX_Buffer, sizeof(RX_Buffer) );
 }
 
 
