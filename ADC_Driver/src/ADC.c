@@ -66,8 +66,9 @@ float analog_value = 0;
 
 static uint16_t ADC_Readings[NUMBER_OF_CONFIGURED_CHANNEL] = {0};
 
+//HA Review: to be static
 void (*Conv_ptr[NUM_OF_ADC])(void);
-
+//HA Review: to be static
 ADC_RegDef_t* ADC_Arr[NUM_OF_ADC] = {ADC1_BASE, ADC2_BASE, ADC3_BASE};
 
 static void ADC_PeripheralControl(uint8_t ADC_ID, uint8_t Cmd);
@@ -258,6 +259,7 @@ void ADC_EOCOnEachRegularChannelCmd(uint8_t ADC_ID, uint8_t State)
 
 ADC_CONVERSION_STATUS ADC_GetConversionValuePolling(uint8_t ADC_ID, uint16_t *data)
 {
+//HA Review: one return statement should be added to the function
 	ADC_RegDef_t *pADCx;
 	pADCx = ADC_Arr[ADC_ID];
 
