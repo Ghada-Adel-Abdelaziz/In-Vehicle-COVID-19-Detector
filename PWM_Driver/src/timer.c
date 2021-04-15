@@ -88,9 +88,11 @@
 
 uint16_t x = 0;
 
+void (*TIM2_ptr[NUM_OF_TIM])(void);
+void (*TIM3_ptr[NUM_OF_TIM])(void);
 
 
-TIM_RegDef_t *Timer_Arr[4] = {TIMER2,TIMER3,TIMER4,TIMER5};
+TIM_RegDef_t *Timer_Arr[NUM_OF_TIM] = {TIMER2,TIMER3,TIMER4,TIMER5};
 
 
 static void Timer_PeriClockControl(uint8_t TIM_ID,uint8_t EnCLK)
@@ -108,8 +110,8 @@ static char TIM_GetFlagStatus(uint8_t TIM_ID , uint32_t FlagName)
 }
 
 
-//HA Review: function areguments type should be added explicitly
-void Timer_Init()
+//HA Review: function areguments type should be added explicitly (done)
+void Timer_Init(void)
 {
 	//Temporary variable
 	uint32_t TempReg=0;
@@ -117,9 +119,10 @@ void Timer_Init()
 	TIM_RegDef_t *pTIMx;
 	uint32_t temp = 0;  //temp register
 
-    //HA Review: Timer to be switched of before starting init
+    //HA Review: Timer to be switched of before starting init (done)
 	for(counter = 0; counter<NUMBER_OF_CONFIGURED_TIMER; counter++)
 	{
+		Timer_Cmd(TIM_ConfigArray[counter].TIMER_ID, STOP);
 		/***Implement the code to enable the Clock for given ADC peripheral***/
 		Timer_PeriClockControl(TIM_ConfigArray[counter].TIMER_ID,ENABLE);     // enable TIM clock
 
@@ -149,7 +152,9 @@ void Timer_Init()
 		/*we may need to generate an update event here to activate
 		 *
 		the prescaler reg initialization*/
-
+		
+		TIM2_ptr[TIM_ConfigArray[counter].TIMER_ID] = TIM_ConfigArray[counter].TIMER2_CompleteFunptr;
+		TIM3_ptr[TIM_ConfigArray[counter].TIMER_ID] = TIM_ConfigArray[counter].TIMER3_CompleteFunptr;
 
 	}
 }
@@ -408,8 +413,9 @@ void TIM2_IRQHandler(void)
 
 	if( TIM_GetFlagStatus(TIMER2_ , UPD_EVENT_INT_FLAG) == 1)
 	{
-		GPIO_ToggleOutputPin(GPIOD_, RED_LED); //HA review: test code to be removed
-		//HA review:callback to be added
+		//HA review:callback to be added (done)
+		
+		TIM2_ptr[TIMER2_]();
 
 		pTIMx->SR &= ~(1 << UPD_EVENT_INT_FLAG);     // this flag must be cleared here as per data sheet page 634
 
@@ -426,6 +432,7 @@ void TIM3_IRQHandler(void)
 
 	if( TIM_GetFlagStatus(TIMER3_ , UPD_EVENT_INT_FLAG) == 1)
 	{
+		TIM3_ptr[TIMER3_]();
 		x++;
 		pTIMx->SR &= ~(1 << UPD_EVENT_INT_FLAG);     // this flag must be cleared here as per data sheet page 634
 	}

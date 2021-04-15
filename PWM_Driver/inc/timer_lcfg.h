@@ -54,7 +54,8 @@ typedef struct
 
 	uint16_t TIM_OutputState;   /*!< Specifies the TIM Output Compare state.
                                    This parameter can be a value of @ref TIM_Output_Compare_State */
-
+    void (*TIMER2_CompleteFunptr)(void);
+	void (*TIMER3_CompleteFunptr)(void);
 } TIM_OC_Config_t;
 
 

@@ -10,11 +10,45 @@
 #include "timer.h"
 #include "timer_Lcfg.h"
 
+void LED1_ON(void)   // I2C TX complete
+{
+	static char i = 0;
+	i++;
+
+	if(i == 1)
+	{
+		GPIO_WriteOutputPin(ORANGE_LED,1);
+	}
+	else if(i == 2)
+	{
+		i = 0;
+		GPIO_WriteOutputPin(ORANGE_LED,0);
+	}
+
+}
+
+void LED2_ON(void)   // UART RX complete
+{
+	static char i = 0;
+	i++;
+
+	if(i == 1)
+	{
+		GPIO_WriteOutputPin(GREEN_LED,1);
+	}
+	else if(i == 2)
+	{
+		i = 0;
+		GPIO_WriteOutputPin(GREEN_LED,0);
+	}
+
+	Uart_SendDataAsync(USART2_,RX_Buffer,sizeof(RX_Buffer));
+}
 
 TIM_Config_t TIM_ConfigArray[NUMBER_OF_CONFIGURED_TIMER] =
 {
-		{TIMER2_, 83/*41999*/, TIM_CounterMode_Up, 2000, TIM_CKD_DIV1},
-		{TIMER3_, 83/*41999*/, TIM_CounterMode_Up, 1000, TIM_CKD_DIV1},
+		{TIMER2_, 83/*41999*/, TIM_CounterMode_Up, 2000, TIM_CKD_DIV1, LED1_ON},
+		{TIMER3_, 83/*41999*/, TIM_CounterMode_Up, 1000, TIM_CKD_DIV1, LED2_ON},
 };
 
 
