@@ -11,7 +11,7 @@
 #include "ADC_Lcfg.h"
 
 
-void LED_ON(void)   // I2C TX complete
+void LED_ON(void)   // ADC Conversion complete
 {
 	static char i = 0;
 	i++;
