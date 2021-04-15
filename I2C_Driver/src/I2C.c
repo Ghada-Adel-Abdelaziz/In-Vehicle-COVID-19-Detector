@@ -87,6 +87,7 @@ typedef struct
 	volatile uint16_t DataSizeCounter;
 	uint8_t*   Data;
 	volatile uint8_t SlaveAddress;
+	volatile uint16_t LocationAddress;
 	volatile uint16_t CurrentIndex;
 	volatile uint8_t Flag;
 }I2C_TxDetails_t;
@@ -98,6 +99,7 @@ typedef struct
 	volatile uint16_t DataSizeCounter;
 	uint8_t*   Data;
 	volatile uint8_t SlaveAddress;
+	volatile uint16_t LocationAddress;
 	volatile uint16_t CurrentIndex;
 	volatile uint8_t Flag;
 }I2C_RxDetails_t;
@@ -387,7 +389,7 @@ void Send_Stop_Bit_Assynchronous(uint8_t I2C_ID)
 
 ////////////////////// Asyncrounous Functions /////////////////////////
 
-I2C_ERROR_STATUS I2C_SendDataAsync(uint8_t I2C_ID , uint8_t* Data , uint16_t DataSize, uint8_t slave_address)
+I2C_ERROR_STATUS I2C_SendDataAsync(uint8_t I2C_ID , uint8_t* Data , uint16_t DataSize, uint8_t slave_address,uint16_t loc_address)
 {
 	I2C_ERROR_STATUS returnValue = I2C_E_OK;
 
@@ -396,6 +398,7 @@ I2C_ERROR_STATUS I2C_SendDataAsync(uint8_t I2C_ID , uint8_t* Data , uint16_t Dat
 		/*set values for tx */
 		I2C_IntTxeDetails[I2C_ID].Data = Data;
 		I2C_IntTxeDetails[I2C_ID].SlaveAddress = slave_address;
+		I2C_IntTxeDetails[I2C_ID].LocationAddress = loc_address;
 		I2C_IntTxeDetails[I2C_ID].DataSizeCounter = DataSize;
 		I2C_IntTxeDetails[I2C_ID].CurrentIndex = 0;
 		I2C_IntTxeDetails[I2C_ID].Flag = I2C_TXE_BUSY;
@@ -417,7 +420,7 @@ I2C_ERROR_STATUS I2C_SendDataAsync(uint8_t I2C_ID , uint8_t* Data , uint16_t Dat
 }
 
 
-I2C_ERROR_STATUS I2C_ReceiveDataASync(uint8_t I2C_ID , uint8_t* Data , uint16_t DataSize, uint8_t slave_address)
+I2C_ERROR_STATUS I2C_ReceiveDataASync(uint8_t I2C_ID , uint8_t* Data , uint16_t DataSize, uint8_t slave_address,uint16_t loc_address)
 {
 	I2C_ERROR_STATUS returnValue = I2C_E_OK;
 
@@ -426,6 +429,7 @@ I2C_ERROR_STATUS I2C_ReceiveDataASync(uint8_t I2C_ID , uint8_t* Data , uint16_t 
 		/*set values for tx */
 		I2C_IntRxDetails[I2C_ID].Data = Data;
 		I2C_IntRxDetails[I2C_ID].SlaveAddress = slave_address;
+		I2C_IntRxDetails[I2C_ID].LocationAddress = loc_address;
 		I2C_IntRxDetails[I2C_ID].DataSizeCounter = DataSize;
 		I2C_IntRxDetails[I2C_ID].CurrentIndex = 0;
 		I2C_IntRxDetails[I2C_ID].Flag = I2C_RXE_BUSY;
@@ -493,7 +497,16 @@ void I2C1_EV_IRQHandler(void)
 		}
 		else if( I2C_Current_Status == RECEIVE )
 		{
-			pI2Cx->DR = ( I2C_IntTxeDetails[0].SlaveAddress | 0x01 );      // send the slave address R/W bit is 1 mean reading
+			if( receiving_sequence == 0 )
+			{
+				pI2Cx->DR = ( I2C_IntTxeDetails[0].SlaveAddress | 0x01 );
+				receiving_sequence ++;
+			}
+			else
+			{
+				pI2Cx->DR = ( I2C_IntTxeDetails[0].SlaveAddress | 0x01 );      // send the slave address R/W bit is 1 mean reading
+			}
+
 		}
 
 
@@ -506,24 +519,45 @@ void I2C1_EV_IRQHandler(void)
 
 		if( I2C_Current_Status == TRANSMIT )     // send the first byte
 		{
-			pI2Cx->DR = I2C_IntTxeDetails[0].Data[I2C_IntTxeDetails[0].CurrentIndex];
-			I2C_IntTxeDetails[0].CurrentIndex++;
+			pI2Cx->DR = I2C_IntTxeDetails[0].LocationAddress;
+
+		}
+		else if( I2C_Current_Status == RECEIVE )
+		{
+			if( receiving_sequence == 1 )
+			{
+				pI2Cx->DR = I2C_IntTxeDetails[0].LocationAddress;
+				receiving_sequence ++;
+			}
+			else
+			{
+
+			}
 		}
 
 	}
 	else if( I2C_GetFlagStatus_SR1(I2C_1 , TX_REG_EMPTY_FLAG) == 1 )
 	{
-		if(I2C_IntTxeDetails[0].CurrentIndex < I2C_IntTxeDetails[0].DataSizeCounter - 1)
+		if( I2C_Current_Status == RECEIVE )      // this condition execute only once
 		{
-			pI2Cx->DR = I2C_IntTxeDetails[0].Data[I2C_IntTxeDetails[0].CurrentIndex];
-			I2C_IntTxeDetails[0].CurrentIndex++;
+			Send_Start_Bit_Assynchronous(I2C_1);    // send a repeated start bit
+			/* TXE flag is cleared after sending the start bit */
 		}
 		else
 		{
-			Send_Stop_Bit_Assynchronous(I2C_1);   // send stop bit
-			I2C_IntTxeDetails[I2C_1].Flag = I2C_TXE_NOT_BUSY;
+			if(I2C_IntTxeDetails[0].CurrentIndex < I2C_IntTxeDetails[0].DataSizeCounter - 1)
+			{
+				pI2Cx->DR = I2C_IntTxeDetails[0].Data[I2C_IntTxeDetails[0].CurrentIndex];
+				I2C_IntTxeDetails[0].CurrentIndex++;
+			}
+			else
+			{
+				Send_Stop_Bit_Assynchronous(I2C_1);   // send stop bit
+				I2C_IntTxeDetails[I2C_1].Flag = I2C_TXE_NOT_BUSY;
 
-			TX_ptr[I2C_1]();
+				I2C_Current_Status = IDLE;
+				TX_ptr[I2C_1]();
+			}
 
 		}
 
@@ -542,9 +576,12 @@ void I2C1_EV_IRQHandler(void)
 			Send_Stop_Bit_Assynchronous(I2C_1);   // send stop bit
 			I2C_IntRxDetails[I2C_1].Flag = I2C_RXE_NOT_BUSY;
 
+			I2C_Current_Status = IDLE;
+
+			receiving_sequence = 0;
+
 			RX_ptr[I2C_1]();
 		}
 	}
-
 
 }

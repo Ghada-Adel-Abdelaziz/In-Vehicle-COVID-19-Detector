@@ -421,6 +421,9 @@ typedef struct
 #define TIMER5                ((TIM_RegDef_t *) TIMER5_BASE)
 
 
+#define NUM_OF_TIM             4
+
+
 
 
 #define I2C1				  ( (I2C_RegDef_t *) I2C1_ADDR)
@@ -434,7 +437,7 @@ typedef struct
 /*ADC DEFINITION*/
 #define ADC     ((ADC_RegDef_t*)ADC123_ADDR)
 
-
+#define NUM_OF_ADC	   3
 //EXTI DEFINITION
 #define EXTI   ((EXTI_regdef_t*)EXTI_ADDR)
 
