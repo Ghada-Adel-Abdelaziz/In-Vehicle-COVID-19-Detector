@@ -33,6 +33,8 @@ typedef struct
                                                This parameter must range from 1 to 16. */
 
 	uint8_t ADC_Prescaler;          //possible values from @ADC PRESCALER MODES
+	
+	void (*Conversion_CompleteFunptr)(void);
 } ADC_Config_t;
 
 

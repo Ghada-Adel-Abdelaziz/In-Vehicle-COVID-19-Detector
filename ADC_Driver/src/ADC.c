@@ -57,19 +57,24 @@
 #define ADC_SQR3_BITS_STEP_SHIFT_LEFT                           5
 #define FIVE_BITS_MASKING                                       31
 
-#define NUM_OF_REG_BITS                                         32
 
 #define ADC_EOC_BIT_LOCATION_IN_SR                              1
+
+#define REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG   4
 
 float analog_value = 0;
 
 uint16_t ADC_Readings[NUMBER_OF_CONFIGURED_CHANNEL] = {0};
 
+void (*Conv_ptr[NUM_OF_ADC])(void);
 
-ADC_RegDef_t* ADC_Arr[3] = {ADC1_BASE, ADC2_BASE, ADC3_BASE};
+ADC_RegDef_t* ADC_Arr[NUM_OF_ADC] = {ADC1_BASE, ADC2_BASE, ADC3_BASE};
 
 static void ADC_PeripheralControl(uint8_t ADC_ID, uint8_t Cmd);
 static void ADC_PeriClockControl(uint8_t ADC_ID,uint8_t EnorDi);
+
+static void ADC_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi);
+static ADC_CONVERSION_STATUS ADC_GetConversionValuePolling(uint8_t ADC_ID, uint16_t *data);
 
 static void ADC_PeripheralControl(uint8_t ADC_ID, uint8_t Cmd)
 {
@@ -165,6 +170,7 @@ void ADC_Init(void)
 		p->ADC_CCR |= temp;
 
 		/*************************************** END OF ADC CONFIGURATION **************************************/
+		Conv_ptr[ADC_ConfigArray[counter].ADC_ID] = ADC_ConfigArray[counter].Conversion_CompleteFunptr;
 
 	}
 }
@@ -250,17 +256,34 @@ void ADC_EOCOnEachRegularChannelCmd(uint8_t ADC_ID, uint8_t State)
 	}
 }
 
-uint16_t ADC_GetConversionValue(uint8_t ADC_ID)
+ADC_CONVERSION_STATUS ADC_GetConversionValuePolling(uint8_t ADC_ID, uint16_t *data)
 {
-	// HA Review: Conversion state should be checked before returning ressults 
-	// MOK-> conversion not requested
-	//Busy-> Conversion requested but not done.
-	//OK -> conversion result updated
 	ADC_RegDef_t *pADCx;
 	pADCx = ADC_Arr[ADC_ID];
 
-	return (uint16_t)pADCx->ADC_DR;
+	/* i think the user must know that the ADC start conversion sequentially so he must know that each time he call the start conversion function
+	 * it will start the conversion of ch which has a trun in the sequence . Also calling ADC_GetConversionValuePolling function will return the reading
+	 * of the channel according to its turn in the sequence.
+	 * also user can't pass the channel ID as an argument to the function as conversion of channels is done sequentially
+	 */
+
+	if( ( ( pADCx->ADC_SR & (One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) ) >> REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) != 1 )    // convesion not requested ( flag num 4 in SR is 0 ) meaning that start conv func is not called
+	{
+		return NOT_OK;
+	}
+	else if( ( ( ( pADCx->ADC_SR & (One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) ) >> REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) == 1) && ( ( ( pADCx->ADC_SR & (One_bit_shift << ADC_EOC_BIT_LOCATION_IN_SR) ) >> ADC_EOC_BIT_LOCATION_IN_SR) != 1) )    // conversion starts but not complete( flag 4 in SR is 1 but flag 1 in SR is 0 )
+	{
+		return BUSY;
+	}
+	else if( ( ( ( pADCx->ADC_SR & (One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) ) >> REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) == 1) && ( ( ( pADCx->ADC_SR & (One_bit_shift << ADC_EOC_BIT_LOCATION_IN_SR) ) >> ADC_EOC_BIT_LOCATION_IN_SR) == 1) )    // conversion result is ready(flag 4 in SR is 1 and flag 1 in SR is 1)
+	{
+		pADCx->ADC_SR &= ~( One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG );   // clear the conversion started flag
+		*data = pADCx->ADC_DR;        // reading DR also clear the EOC flag is SR
+
+		return OK;
+	}
 }
+
 
 
 uint16_t ADC_getValue(uint8_t Ch_Num)
@@ -331,7 +354,7 @@ void ADC_IRQHandler(void)
 	ADC_RegDef_t *pADCx;
 	pADCx = ADC_Arr[0];
 
-    //HA Review: To search for which channel fired the IRQ. Then update the reading buffer by the channel index
+    //HA Review: To search for which channel fired the IRQ. Then update the reading buffer by the channel index (done)
 	if( pADCx->ADC_SR & (One_bit_shift << ADC_EOC_BIT_LOCATION_IN_SR) )
 	{
 		//first check the end of conversion flag
@@ -345,6 +368,7 @@ void ADC_IRQHandler(void)
 		{
 			i++;
 		}
+		Conv_ptr[ADC_1]();
 	}
 
 }

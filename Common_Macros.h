@@ -42,3 +42,5 @@
 #define One_bit_mask_by_HEX                 0x1
 #define Two_consecutive_bits_mask_by_HEX    0x3
 #define bits_mask_by_HEX                    0xF
+
+#define NUM_OF_REG_BITS                      32
