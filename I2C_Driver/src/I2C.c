@@ -108,7 +108,7 @@ typedef struct
 void (*TX_ptr[NUM_OF_I2C])(void);
 void (*RX_ptr[NUM_OF_I2C])(void);
 
-
+//HA To be static as they are used in one file.
 I2C_TxDetails_t I2C_IntTxeDetails[NUM_OF_I2C]={0};
 
 I2C_RxDetails_t I2C_IntRxDetails[NUM_OF_I2C]={0};
@@ -490,6 +490,7 @@ void I2C1_EV_IRQHandler(void)
 
 	if( I2C_GetFlagStatus_SR1(I2C_1 , START_CONDITION_GENERATED_FLAG) == 1)   // start bit transferred successfully
 	{
+		//HA: Temp variable assignation to be added
 		(void)pI2Cx->SR1;    // read SR1 to clear the flag
 
 		if( I2C_Current_Status == TRANSMIT )
