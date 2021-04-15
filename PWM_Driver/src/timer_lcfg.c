@@ -9,7 +9,7 @@
 #include "timer_Cfg.h"
 #include "timer.h"
 #include "timer_Lcfg.h"
-
+//HA to be moved to stubs
 void LED1_ON(void)   // TIMER2_ counting complete
 {
 	static char i = 0;

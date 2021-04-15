@@ -87,7 +87,7 @@
 
 
 uint16_t x = 0;
-
+//HA Review: to be static as they are used in only one file.
 void (*TIM2_ptr[NUM_OF_TIM])(void);
 void (*TIM3_ptr[NUM_OF_TIM])(void);
 
