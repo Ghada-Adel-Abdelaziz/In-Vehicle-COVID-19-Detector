@@ -87,9 +87,9 @@
 
 
 uint16_t x = 0;
-//HA Review: to be static as they are used in only one file.
-void (*TIM2_ptr[NUM_OF_TIM])(void);
-void (*TIM3_ptr[NUM_OF_TIM])(void);
+
+static void (*TIM2_ptr[NUM_OF_TIM])(void);
+static void (*TIM3_ptr[NUM_OF_TIM])(void);
 
 
 TIM_RegDef_t *Timer_Arr[NUM_OF_TIM] = {TIMER2,TIMER3,TIMER4,TIMER5};
@@ -110,7 +110,6 @@ static char TIM_GetFlagStatus(uint8_t TIM_ID , uint32_t FlagName)
 }
 
 
-//HA Review: function areguments type should be added explicitly (done)
 void Timer_Init(void)
 {
 	//Temporary variable
@@ -119,7 +118,6 @@ void Timer_Init(void)
 	TIM_RegDef_t *pTIMx;
 	uint32_t temp = 0;  //temp register
 
-    //HA Review: Timer to be switched of before starting init (done)
 	for(counter = 0; counter<NUMBER_OF_CONFIGURED_TIMER; counter++)
 	{
 		Timer_Cmd(TIM_ConfigArray[counter].TIMER_ID, STOP);
@@ -413,7 +411,6 @@ void TIM2_IRQHandler(void)
 
 	if( TIM_GetFlagStatus(TIMER2_ , UPD_EVENT_INT_FLAG) == 1)
 	{
-		//HA review:callback to be added (done)
 		
 		TIM2_ptr[TIMER2_]();
 

@@ -9,40 +9,8 @@
 #include "timer_Cfg.h"
 #include "timer.h"
 #include "timer_Lcfg.h"
-//HA to be moved to stubs
-void LED1_ON(void)   // TIMER2_ counting complete
-{
-	static char i = 0;
-	i++;
+#include "timer_stubs.h"
 
-	if(i == 1)
-	{
-		GPIO_WriteOutputPin(ORANGE_LED,1);
-	}
-	else if(i == 2)
-	{
-		i = 0;
-		GPIO_WriteOutputPin(ORANGE_LED,0);
-	}
-
-}
-
-void LED2_ON(void)   // TIMER3_ counting complete
-{
-	static char i = 0;
-	i++;
-
-	if(i == 1)
-	{
-		GPIO_WriteOutputPin(GREEN_LED,1);
-	}
-	else if(i == 2)
-	{
-		i = 0;
-		GPIO_WriteOutputPin(GREEN_LED,0);
-	}
-
-}
 
 TIM_Config_t TIM_ConfigArray[NUMBER_OF_CONFIGURED_TIMER] =
 {

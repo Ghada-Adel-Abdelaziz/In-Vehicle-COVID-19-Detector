@@ -105,13 +105,12 @@ typedef struct
 	volatile uint8_t Flag;
 }I2C_RxDetails_t;
 
-void (*TX_ptr[NUM_OF_I2C])(void);
-void (*RX_ptr[NUM_OF_I2C])(void);
+static void (*TX_ptr[NUM_OF_I2C])(void);
+static void (*RX_ptr[NUM_OF_I2C])(void);
 
-//HA To be static as they are used in one file.
-I2C_TxDetails_t I2C_IntTxeDetails[NUM_OF_I2C]={0};
+static I2C_TxDetails_t I2C_IntTxeDetails[NUM_OF_I2C]={0};
 
-I2C_RxDetails_t I2C_IntRxDetails[NUM_OF_I2C]={0};
+static I2C_RxDetails_t I2C_IntRxDetails[NUM_OF_I2C]={0};
 
 I2C_STATUS I2C_Current_Status = IDLE;
 
@@ -487,11 +486,11 @@ void I2C1_EV_IRQHandler(void)
 {
 	I2C_RegDef_t *pI2Cx;
 	pI2Cx = I2C_Arr[0];
-
+	
+	static uint16_t flag_clearing;
 	if( I2C_GetFlagStatus_SR1(I2C_1 , START_CONDITION_GENERATED_FLAG) == 1)   // start bit transferred successfully
 	{
-		//HA: Temp variable assignation to be added
-		(void)pI2Cx->SR1;    // read SR1 to clear the flag
+		flag_clearing = (void)pI2Cx->SR1;    // read SR1 to clear the flag
 
 		if( I2C_Current_Status == TRANSMIT )
 		{
