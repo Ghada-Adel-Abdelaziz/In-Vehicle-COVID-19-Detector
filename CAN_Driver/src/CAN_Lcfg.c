@@ -6,7 +6,7 @@
  */
 
 
-CAN_msg CAN_ConfigArray[ NUMBER_OF_CONFIGURED_I2C ]=
+CAN_msg CAN_ConfigArray[ NUMBER_OF_CONFIGURED_CAN  ]=
 {
 		{id, data[8], len, format, type, u8ActiveFlag, call back func },
 };

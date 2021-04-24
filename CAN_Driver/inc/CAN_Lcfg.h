@@ -37,7 +37,7 @@ typedef struct
 #define DATA_FRAME       0
 #define REMOTE_FRAME     1
 
-extern CAN_msg CAN_ConfigArray[ NUMBER_OF_CONFIGURED_I2C ];
+extern CAN_msg CAN_ConfigArray[ NUMBER_OF_CONFIGURED_CAN  ];
 
 filter_type CAN_FilterArray [ CANHANDLER_u8MAXFILTERNUMBERS ];
 
