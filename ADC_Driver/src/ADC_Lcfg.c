@@ -9,24 +9,7 @@
 #include "ADC_Cfg.h"
 #include "ADC.h"
 #include "ADC_Lcfg.h"
-
-
-void LED_ON(void)   // ADC Conversion complete
-{
-	static char i = 0;
-	i++;
-
-	if(i == 1)
-	{
-		GPIO_WriteOutputPin(ORANGE_LED,1);
-	}
-	else if(i == 2)
-	{
-		i = 0;
-		GPIO_WriteOutputPin(ORANGE_LED,0);
-	}
-
-}
+#include "ADC_stubs.h"
 
 ADC_Config_t ADC_ConfigArray[ NUMBER_OF_CONFIGURED_ADC]=
 		/*	ADC_ID    ADC MODE   ADC_Prescaler         ADC_Resolution     Data_alignment       */

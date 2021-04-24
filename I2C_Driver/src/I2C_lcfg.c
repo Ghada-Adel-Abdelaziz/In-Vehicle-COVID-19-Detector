@@ -1,6 +1,6 @@
 /******************************************************************************
- * Module: 		ADC
- * File Name: 	ADC.c
+ * Module: 		I2C
+ * File Name: 	I2C_lcfg.c
  * Description: ADC Source file for
  * 				STM32F407 Microcontroller
  * Author: 		Toqa & Ghada
@@ -9,40 +9,7 @@
 
 #include "I2C_lcfg.h"
 #include "I2C_cfg.h"
-void LED1_ON(void)   // I2C TX complete
-{
-	static char i = 0;
-	i++;
-
-	if(i == 1)
-	{
-		GPIO_WriteOutputPin(ORANGE_LED,1);
-	}
-	else if(i == 2)
-	{
-		i = 0;
-		GPIO_WriteOutputPin(ORANGE_LED,0);
-	}
-
-}
-
-void LED2_ON(void)   // I2C RX complete
-{
-	static char i = 0;
-	i++;
-
-	if(i == 1)
-	{
-		GPIO_WriteOutputPin(GREEN_LED,1);
-	}
-	else if(i == 2)
-	{
-		i = 0;
-		GPIO_WriteOutputPin(GREEN_LED,0);
-	}
-
-	I2C_ReceiveDataASync(I2C_1, RX_Buffer, sizeof(RX_Buffer) );
-}
+#include "I2C_stubs.h"
 
 
 extern I2C_Config_t I2C_ConfigArray[NUMBER_OF_CONFIGURED_I2C]=
