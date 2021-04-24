@@ -6,5 +6,5 @@
  */
 
 
-void LED1_ON(void);
-void LED1_ON(void);
+void LED1_ON(void); // TIMER2_ counting complete
+void LED2_ON(void); // TIMER3_ counting complete
