@@ -23,9 +23,9 @@ void CAN_start         (void);
 void CAN_wrMsg      (CAN_msg *msg, u8 u8MailBox);
 void CAN_rdMsg_0        (CAN_msg *msg);
 void CAN_rdMsg_1        (CAN_msg *msg);
-void CAN_wrFilter      (filter_type *pstrfilter);
+void CAN_wrFilter      (void);
 
-void CAN_vid_filter_list(filter_type *pstrfilter,u8 no_of_filters);
+void CAN_vid_filter_list(u8 no_of_filters);
 
 extern CAN_msg       CAN_TxMsg[3];      // CAN messge for sending
 extern CAN_msg       CAN_RxMsg[3];      // CAN message for receiving
