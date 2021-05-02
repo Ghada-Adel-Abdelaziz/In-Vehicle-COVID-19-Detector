@@ -25,10 +25,12 @@ u8 u8MailBox1Flag;
 u8 value_2[8];
 u8 u8MailBox2Flag;
 
-CAN_TypeDef* CAN_Arr[NUM_OF_CAN] = {CAN_1, CAN_2};
+static CAN_TypeDef* CAN_Arr[NUM_OF_CAN] = {CAN_1, CAN_2};
 
 static void CAN_waitReady (void);
 static void CAN_vidReleaseMessage(void);
+
+static void CAN_wrFilter (void);
 /*----------------------------------------------------------------------------
   setup CAN interface
  *----------------------------------------------------------------------------*/
@@ -49,8 +51,16 @@ void CAN_init(void)  {
 	CAN1->BTR &= ~(((        0x03) << 24) | ((        0x07) << 20) | ((         0x0F) << 16) | (          0x1FF));
 	CAN1->BTR |=  ((((4-1) & 0x03) << 24) | (((5-1) & 0x07) << 20) | (((12-1) & 0x0F) << 16) | ((brp-1) & 0x1FF));
 
+	CAN_wrFilter( );
+
+	CAN1->BTR &= ~(CAN_BTR_SILM | CAN_BTR_LBKM);     // set testmode
+
+	CAN1->BTR |=  (0 & (CAN_BTR_SILM | CAN_BTR_LBKM));
+
 	CAN1->MCR &= ~(CAN_MCR_INRQ);                      // normal operating mode, reset INRQ
 	while (CAN1->MSR & CAN_MCR_INRQ);
+
+	CAN_waitReady ();
 }
 
 /*----------------------------------------------------------------------------
@@ -71,43 +81,67 @@ static void CAN_waitReady (void)  {
 /*----------------------------------------------------------------------------
   wite a message to CAN peripheral and transmit it
  ----------------------------------------------------------------------------*/
-void CAN_wrMsg (CAN_msg *msg, u8 u8MailBox)  {
+void CAN_wrMsg (CAN_msg *msg)  {
 
-	CAN1->sTxMailBox[u8MailBox].TIR  = (u32)0;      // Reset TIR register
-	// Setup identifier information
-	if (msg->format == STANDARD_FORMAT)
+	u8 u8MailBoxIndex = 0;
+	u8 u8DataCounter = 0;
+	u8 u8PendingMsgID = 0;
+	u8 u8Counter = 0;
+	CAN_Transmission_STATUS returnValue ;
+	for (u8MailBoxIndex = 0; u8MailBoxIndex < 3; u8MailBoxIndex++)
 	{
-		CAN1->sTxMailBox[u8MailBox].TIR |= (u32)(msg->id << 21) | (CAN_ID_STD);
-	}
-	else
-	{    // Extended ID
+		if (CAN_TxRdy[u8MailBoxIndex] == 1)
+		{
+			returnValue = OK;
+			break;
+		}
 
-		CAN1->sTxMailBox[u8MailBox].TIR |= (u32)(msg->id <<  3) | (CAN_ID_EXT);
+		else
+		{
+			returnValue = NOT_OK;
+		}
 	}
-	// Setup type information
-	if (msg->type == DATA_FRAME)
-	{   // DATA FRAME
-		CAN1->sTxMailBox[u8MailBox].TIR |= (CAN_RTR_DATA);
-		CAN1->sTxMailBox[u8MailBox].TDLR = (((u32)msg->data[3] << 24) |
-				((u32)msg->data[2] << 16) |
-				((u32)msg->data[1] <<  8) |
-				((u32)msg->data[0])        );
-		CAN1->sTxMailBox[u8MailBox].TDHR = (((u32)msg->data[7] << 24) |
-				((u32)msg->data[6] << 16) |
-				((u32)msg->data[5] <<  8) |
-				((u32)msg->data[4])        );
-	}
-	else
-	{                  // REMOTE FRAME
-		CAN1->sTxMailBox[u8MailBox].TIR |= (CAN_RTR_REMOTE);
-	}
-	// Setup length
-	CAN1->sTxMailBox[u8MailBox].TDTR &= ~CAN_TDTxR_DLC;
-	CAN1->sTxMailBox[u8MailBox].TDTR |=  (msg->len & CAN_TDTxR_DLC);
 
-	CAN1->IER |= CAN_IER_TMEIE;                      // enable  TME interrupt                     // enable  TME interrupt
-	CAN1->sTxMailBox[u8MailBox].TIR |=  CAN_TIxR_TXRQ;       // transmit message
+	if (u8MailBoxIndex < 3)
+	{
+		CAN1->sTxMailBox[u8MailBoxIndex].TIR  = (u32)0;      // Reset TIR register
+		// Setup identifier information
+		if (msg->format == STANDARD_FORMAT)
+		{
+			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (u32)(msg->id << 21) | (CAN_ID_STD);
+		}
+		else
+		{    // Extended ID
 
+			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (u32)(msg->id <<  3) | (CAN_ID_EXT);
+		}
+		// Setup type information
+		if (msg->type == DATA_FRAME)
+		{   // DATA FRAME
+			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (CAN_RTR_DATA);
+			CAN1->sTxMailBox[u8MailBoxIndex].TDLR = (((u32)msg->data[3] << 24) |
+					((u32)msg->data[2] << 16) |
+					((u32)msg->data[1] <<  8) |
+					((u32)msg->data[0])        );
+			CAN1->sTxMailBox[u8MailBoxIndex].TDHR = (((u32)msg->data[7] << 24) |
+					((u32)msg->data[6] << 16) |
+					((u32)msg->data[5] <<  8) |
+					((u32)msg->data[4])        );
+		}
+		else
+		{                  // REMOTE FRAME
+			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (CAN_RTR_REMOTE);
+		}
+		// Setup length
+		CAN1->sTxMailBox[u8MailBoxIndex].TDTR &= ~CAN_TDTxR_DLC;
+		CAN1->sTxMailBox[u8MailBoxIndex].TDTR |=  (msg->len & CAN_TDTxR_DLC);
+
+		CAN1->IER |= CAN_IER_TMEIE;                      // enable  TME interrupt                     // enable  TME interrupt
+		CAN1->sTxMailBox[u8MailBoxIndex].TIR |=  CAN_TIxR_TXRQ;       // transmit message
+
+
+	}
+	return returnValue;
 }
 
 
@@ -153,44 +187,47 @@ void CAN_rdMsg (CAN_msg *msg)  {
 
 void CAN_wrFilter ()  {
 
-	static unsigned short CAN_filterIdx = 0;
-
-	filter_type *pstrfilter;
-
-	pstrfilter = CAN_Arr[CAN_filters_Array[CAN_filterIdx].u8Id];
+	static unsigned short CAN_filterIdx;
 
 	u32   CAN_msgId     = 0;
 
-	if (CAN_filterIdx > 13) {                       // check if Filter Memory is full
-		return;
-	}
-	// Setup identifier information
-	if (CAN_filters_Array[CAN_filterIdx].u8Id == STANDARD_FORMAT)  {               // Standard ID
-		CAN_msgId  |= (u32)(CAN_filters_Array[CAN_filterIdx].u8Id << 21) | CAN_ID_STD;
 
-	}  else  {                                      // Extended ID
-		CAN_msgId  |= (u32)(CAN_filters_Array[CAN_filterIdx].u8Id <<  3) | CAN_ID_EXT;
-	}
-	if (CAN_filters_Array[CAN_filterIdx].u8Frame == REMOTE_FRAME)  {               // Standard ID
-		CAN_msgId  |= CAN_RTR_REMOTE;
-	}
-	else
+	CAN1->FMR  |=  CAN_FMR_FINIT;						// set Initialisation mode for filter banks
+	for (CAN_filterIdx = 0 ; CAN_filterIdx < NUMBER_OF_CONFIGURED_CAN_FILTERS; CAN_filterIdx++)
 	{
+		// Enable reception of messages
+		if (CAN_filterIdx > 13) {                       // check if Filter Memory is full
+			return;
+		}
+		// Setup identifier information
+		if (CAN_filters_Array[CAN_filterIdx].u8Id == STANDARD_FORMAT)  {               // Standard ID
+			CAN_msgId  |= (u32)(CAN_filters_Array[CAN_filterIdx].u8Id << 21) | CAN_ID_STD;
+
+		}  else  {                                      // Extended ID
+			CAN_msgId  |= (u32)(CAN_filters_Array[CAN_filterIdx].u8Id <<  3) | CAN_ID_EXT;
+		}
+		if (CAN_filters_Array[CAN_filterIdx].u8Frame == REMOTE_FRAME)  {               // Standard ID
+			CAN_msgId  |= CAN_RTR_REMOTE;
+		}
+		else
+		{
+
+		}
+		CAN1->FA1R &=  ~(u32)(1 << CAN_filterIdx); // deactivate filter
+
+		// initialize filter
+		CAN1->FS1R |= (u32)(1 << CAN_filterIdx);// set 32-bit scale configuration
+		CAN1->FM1R |= (u32)(1 << CAN_filterIdx);// set 2 32-bit identifier list mode
+
+		CAN1->sFilterRegister[CAN_filterIdx].FR1 = CAN_msgId; //  32-bit identifier
+		CAN1->sFilterRegister[CAN_filterIdx].FR2 = CAN_msgId; //  32-bit identifier
+
+		CAN1->FFA1R &= ~(u32)(1 << CAN_filterIdx);  // assign filter to FIFO 0
+		CAN1->FA1R  |=  (u32)(1 << CAN_filterIdx);  // activate filter
 
 	}
-	CAN1->FA1R &=  ~(u32)(1 << CAN_filterIdx); // deactivate filter
 
-	// initialize filter
-	CAN1->FS1R |= (u32)(1 << CAN_filterIdx);// set 32-bit scale configuration
-	CAN1->FM1R |= (u32)(1 << CAN_filterIdx);// set 2 32-bit identifier list mode
-
-	CAN1->sFilterRegister[CAN_filterIdx].FR1 = CAN_msgId; //  32-bit identifier
-	CAN1->sFilterRegister[CAN_filterIdx].FR2 = CAN_msgId; //  32-bit identifier
-
-	CAN1->FFA1R &= ~(u32)(1 << CAN_filterIdx);  // assign filter to FIFO 0
-	CAN1->FA1R  |=  (u32)(1 << CAN_filterIdx);  // activate filter
-
-	CAN_filterIdx += 1;                             // increase filter index
+	CAN1->FMR &= ~(CAN_FMR_FINIT);						// reset Initialisation mode for filter banks
 }
 
 static void CAN_vidReleaseMessage(void)
@@ -198,27 +235,8 @@ static void CAN_vidReleaseMessage(void)
 	CAN1->RF0R |= CAN_RF0R_RFOM0;
 }
 
-u8 CAN_u8GetNumberOfPendingMessage(void)
-{
-	return ((CAN1->RF0R) & (0x00000003));
-}
 
-void CAN_vid_filter_list( u8 no_of_filters )
-{
-	filt_counter = 0 ;
-	filter_type *pstrfilter;
-
-	pstrfilter = CAN_Arr[CAN_filters_Array[filt_counter].u8Id];
-	CAN1->FMR  |=  CAN_FMR_FINIT;						// set Initialisation mode for filter banks
-	for (filt_counter = 0 ; filt_counter < no_of_filters ; filt_counter++)
-	{
-		CAN_wrFilter (&(CAN_filters_Array[filt_counter]));             // Enable reception of messages
-	}
-	CAN1->FMR &= ~(CAN_FMR_FINIT);						// reset Initialisation mode for filter banks
-}
-
-
-//*----------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
 CAN transmit interrupt handler
 *----------------------------------------------------------------------------*/
 void USB_HP_CAN1_TX_IRQHandler (void) {

@@ -5,11 +5,11 @@
  *      Author: Ghada & Toaa
  */
 
-
-CAN_msg CAN_ConfigArray[ NUMBER_OF_CONFIGURED_CAN  ]=
-{
-		{id, data[8], len, format, type, u8ActiveFlag, call back func },
-};
+#include <stdio.h>
+#include <stdlib.h>
+#include "CAN.h"
+#include "CAN_Lcfg.h"
+#include "CAN_cfg.h"
 
 filter_type CAN_filters_Array [ NUMBER_OF_CONFIGURED_CAN_FILTERS ] =
 {

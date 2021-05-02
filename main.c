@@ -34,7 +34,6 @@ void delay_ms(uint16_t delay)
 }
 
 
-
 int main(void)
 {
 	long i = 0;
@@ -61,76 +60,25 @@ int main(void)
 	ADC_IRQConfig(18, ENABLE);     // 18 is ID for ADC in NVIC
 	ADC_SoftwareStartConv(ADC_1);  // to start ADC conversion
 
+	CAN_TxMsg.id = 60;                              //initialise message to send
+	for (i = 0; i < 8; i++) CAN_TxMsg.data[i] = 0;
+	CAN_TxMsg.len = 1;
+	CAN_TxMsg.format = STANDARD_FORMAT;
+	CAN_TxMsg.type = DATA_FRAME;
+
+	CAN_wrMsg      (&(CAN_TxMsg));
 	while (1)
 	{
 
-		// ADC test
+		while (CAN_RxRdy == 0);
 
-//				if( ( (3*ADC_Readings[0]) / 1023) < 1 )
-//				{
-//					GPIO_WriteOutputPin(ORANGE_LED,1);    // green led
-//					//for(i=0; i<1000000; i++);
-//				}
-//				else
-//				{
-//					GPIO_WriteOutputPin(ORANGE_LED,0);
-//					//for(i=0; i<1000000; i++);
-//				}
-		//
-		//		if( ( (3*ADC_Readings[1]) / 1023) < 1 )
-		//		{
-		//			GPIO_WriteOutputPin(LED1,1);   // orange led
-		//			for(i=0; i<1000000; i++);
-		//		}
-		//		else
-		//		{
-		//			GPIO_WriteOutputPin(LED1,0);
-		//			for(i=0; i<1000000; i++);
-		//		}
+		if (CAN_RxRdy)
+		{
+			CAN_RxRdy = 0;
+			//read message here from array
 
-
-
-		// UART test
-		//Uart_SendDataAsync(USART2_,TX_Buffer,sizeof(TX_Buffer));
-
-		Uart_ReceiveDataASync(USART2_, RX_Buffer, sizeof(RX_Buffer));
-
-//				if( RX_Buffer[0] == 5 )
-//				{
-//					GPIO_WriteOutputPin(LED0,1);
-//				}
-//				else
-//				{
-//					GPIO_WriteOutputPin(LED0,0);
-//				}
-
-
-
-		//		GPIO_ToggleOutputPin(GPIOD_,LED1);
-		//		delay_ms(1000);
-
-
-		// PWM test
-//
-//		int i,j = 0;
-//
-//		for(i=0; i<2000; i++)
-//		{
-//
-//			CC1R_SetValue(TIMER2_,i);
-//
-//			delay_ms(2);
-//
-//		}
-//
-//		//for(j=0; j<1000000; j++);
-//
-//		for(i=2000; i>0; i--)
-//		{
-//			CC1R_SetValue(TIMER2_,i);
-//
-//			delay_ms(2);
-//		}
+			CAN_RxMsg;
+		}
 	}
 	return 0;
 
