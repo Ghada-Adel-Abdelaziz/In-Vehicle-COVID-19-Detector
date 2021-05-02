@@ -5,6 +5,6 @@
  *      Author: Ghada & Toaa
  */
  
- #define NUMBER_OF_CONFIGURED_CAN_FILTER	 6   
+ #define NUMBER_OF_CONFIGURED_CAN_FILTERS	 6   
  
  #define NUMBER_OF_CONFIGURED_CAN            1
