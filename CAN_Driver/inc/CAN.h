@@ -19,7 +19,6 @@
 /* Functions defined in module CAN.c */
 
 void CAN_init          (void);
-void CAN_start         (void);
 void CAN_wrMsg      (CAN_msg *msg, u8 u8MailBox);
 void CAN_rdMsg        (CAN_msg *msg);
 void CAN_wrFilter      (void);
