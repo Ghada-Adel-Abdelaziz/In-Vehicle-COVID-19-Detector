@@ -141,8 +141,8 @@ typedef struct
 #define CAN__Msg_Pending	((unsigned long)0x00000003)
 
 
+extern CAN_msg       CAN_RxMsg[3];                          // CAN message for receiving
 
-extern CAN_msg CAN_ConfigArray[ NUMBER_OF_CONFIGURED_CAN  ];
 
 extern filter_type CAN_filters_Array [ NUMBER_OF_CONFIGURED_CAN_FILTERS ];
 
