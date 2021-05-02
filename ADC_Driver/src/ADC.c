@@ -66,10 +66,9 @@ float analog_value = 0;
 
 static uint16_t ADC_Readings[NUMBER_OF_CONFIGURED_CHANNEL] = {0};
 
-//HA Review: to be static
-void (*Conv_ptr[NUM_OF_ADC])(void);
-//HA Review: to be static
-ADC_RegDef_t* ADC_Arr[NUM_OF_ADC] = {ADC1_BASE, ADC2_BASE, ADC3_BASE};
+static void (*Conv_ptr[NUM_OF_ADC])(void);
+
+static ADC_RegDef_t* ADC_Arr[NUM_OF_ADC] = {ADC1_BASE, ADC2_BASE, ADC3_BASE};
 
 static void ADC_PeripheralControl(uint8_t ADC_ID, uint8_t Cmd);
 static void ADC_PeriClockControl(uint8_t ADC_ID,uint8_t EnorDi);
@@ -259,7 +258,7 @@ void ADC_EOCOnEachRegularChannelCmd(uint8_t ADC_ID, uint8_t State)
 
 ADC_CONVERSION_STATUS ADC_GetConversionValuePolling(uint8_t ADC_ID, uint16_t *data)
 {
-//HA Review: one return statement should be added to the function
+	ADC_CONVERSION_STATUS returnValue ;
 	ADC_RegDef_t *pADCx;
 	pADCx = ADC_Arr[ADC_ID];
 
@@ -271,19 +270,20 @@ ADC_CONVERSION_STATUS ADC_GetConversionValuePolling(uint8_t ADC_ID, uint16_t *da
 
 	if( ( ( pADCx->ADC_SR & (One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) ) >> REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) != 1 )    // convesion not requested ( flag num 4 in SR is 0 ) meaning that start conv func is not called
 	{
-		return NOT_OK;
+		returnValue = NOT_OK;
 	}
 	else if( ( ( ( pADCx->ADC_SR & (One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) ) >> REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) == 1) && ( ( ( pADCx->ADC_SR & (One_bit_shift << ADC_EOC_BIT_LOCATION_IN_SR) ) >> ADC_EOC_BIT_LOCATION_IN_SR) != 1) )    // conversion starts but not complete( flag 4 in SR is 1 but flag 1 in SR is 0 )
 	{
-		return BUSY;
+		returnValue = BUSY;
 	}
 	else if( ( ( ( pADCx->ADC_SR & (One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) ) >> REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG) == 1) && ( ( ( pADCx->ADC_SR & (One_bit_shift << ADC_EOC_BIT_LOCATION_IN_SR) ) >> ADC_EOC_BIT_LOCATION_IN_SR) == 1) )    // conversion result is ready(flag 4 in SR is 1 and flag 1 in SR is 1)
 	{
 		pADCx->ADC_SR &= ~( One_bit_shift << REGULAR_CHANNEL_START_FLAG_BIT_LOCATION_IN_ADC_SR_REG );   // clear the conversion started flag
 		*data = pADCx->ADC_DR;        // reading DR also clear the EOC flag is SR
 
-		return OK;
+		returnValue = OK;
 	}
+	return returnValue;
 }
 
 
@@ -291,10 +291,7 @@ ADC_CONVERSION_STATUS ADC_GetConversionValuePolling(uint8_t ADC_ID, uint16_t *da
 uint16_t ADC_getValue(uint8_t Ch_Num)
 {
 	uint8_t i = 0;
-	// HA Review: Conversion state should be checked before returning ressults 
-	// MOK-> conversion not requested
-	//Busy-> Conversion requested but not done.
-	//OK -> conversion result updated - ISR called
+
 	ADC_RegDef_t *pADCx;
 
 	for(i=0; i<NUMBER_OF_CONFIGURED_CHANNEL; i++)
@@ -356,7 +353,6 @@ void ADC_IRQHandler(void)
 	ADC_RegDef_t *pADCx;
 	pADCx = ADC_Arr[0];
 
-    //HA Review: To search for which channel fired the IRQ. Then update the reading buffer by the channel index (done)
 	if( pADCx->ADC_SR & (One_bit_shift << ADC_EOC_BIT_LOCATION_IN_SR) )
 	{
 		//first check the end of conversion flag
