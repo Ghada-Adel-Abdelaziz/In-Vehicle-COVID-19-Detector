@@ -288,7 +288,7 @@ void USB_LP_CAN1_RX0_IRQHandler (void) {
 		CAN_rdMsg_0 (&(CAN_RxMsg[u8RxMsgIndex]));                     // read the message
 		CAN_RxMsg[u8RxMsgIndex].u8ActiveFlag = 1;
 		CAN_RxRdy = 1;                                // set receive flag
-		GPIO_WriteOutputPin(GREEN_LED,1);    // green led
+		
 	}
 }
 
