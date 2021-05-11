@@ -4,7 +4,7 @@
  *  Created on: April 23, 2021
  *      Author: Ghada & Toaa
  */
- 
+
 #ifndef CANHANDLER_CFG_H_
 #define CANHANDLER_CFG_H_
 
@@ -20,17 +20,6 @@
 #define DATA_FRAME       0
 #define REMOTE_FRAME     1
 
-
-typedef struct  {
-  uint32_t  id;                 // 29 bit identifier
-  uint8_t  data[8];            // Data field
-  uint8_t  len;                // Length of data field in bytes
-  uint8_t  format;             // 0 - STANDARD, 1- EXTENDED IDENTIFIER
-  uint8_t  type;               // 0 - DATA FRAME, 1 - REMOTE FRAME
-  uint8_t u8ActiveFlag;			//active flag by sondos
-} CAN_msg;
-
-
 typedef struct
 {
 	uint8_t u8Id;
@@ -40,55 +29,55 @@ typedef struct
 
 typedef struct
 {
-  u32 TIR;
-  u32 TDTR;
-  u32 TDLR;
-  u32 TDHR;
+	uint32_t TIR;
+	uint32_t TDTR;
+	uint32_t TDLR;
+	uint32_t TDHR;
 } CAN_TxMailBox_TypeDef;
 
 
 typedef struct
 {
-  u32 RIR;
-  u32 RDTR;
-  u32 RDLR;
-  u32 RDHR;
+	uint32_t RIR;
+	uint32_t RDTR;
+	uint32_t RDLR;
+	uint32_t RDHR;
 } CAN_FIFOMailBox_TypeDef;
 
 
 typedef struct
 {
-  u32 FR1;
-  u32 FR2;
+	uint32_t FR1;
+	uint32_t FR2;
 } CAN_FilterRegister_TypeDef;
 
 typedef struct
 {
-  u32 MCR;
-  u32 MSR;
-  u32 TSR;
-  u32 RF0R;
-  u32 RF1R;
-  u32 IER;
-  u32 ESR;
-  u32 BTR;
-  u32  RESERVED0[88];
-  CAN_TxMailBox_TypeDef sTxMailBox[3];
-  CAN_FIFOMailBox_TypeDef sFIFOMailBox[2];
-  u32  RESERVED1[12];
-  u32 FMR;
-  u32 FM1R;
-  u32  RESERVED2;
-  u32 FS1R;
-  u32  RESERVED3;
-  u32 FFA1R;
-  u32  RESERVED4;
-  u32 FA1R;
-  u32  RESERVED5[8];
+	uint32_t MCR;
+	uint32_t MSR;
+	uint32_t TSR;
+	uint32_t RF0R;
+	uint32_t RF1R;
+	uint32_t IER;
+	uint32_t ESR;
+	uint32_t BTR;
+	uint32_t  RESERVED0[88];
+	CAN_TxMailBox_TypeDef sTxMailBox[3];
+	CAN_FIFOMailBox_TypeDef sFIFOMailBox[2];
+	uint32_t  RESERVED1[12];
+	uint32_t FMR;
+	uint32_t FM1R;
+	uint32_t  RESERVED2;
+	uint32_t FS1R;
+	uint32_t  RESERVED3;
+	uint32_t FFA1R;
+	uint32_t  RESERVED4;
+	uint32_t FA1R;
+	uint32_t  RESERVED5[8];
 #ifndef STM32F10X_CL
-  CAN_FilterRegister_TypeDef sFilterRegister[14];
+	CAN_FilterRegister_TypeDef sFilterRegister[14];
 #else
-  CAN_FilterRegister_TypeDef sFilterRegister[28];
+	CAN_FilterRegister_TypeDef sFilterRegister[28];
 #endif /* STM32F10X_CL */
 } CAN_TypeDef;
 
@@ -142,7 +131,6 @@ typedef struct
 
 
 extern CAN_msg       CAN_RxMsg[3];                          // CAN message for receiving
-
 
 extern filter_type CAN_filters_Array [ NUMBER_OF_CONFIGURED_CAN_FILTERS ];
 
