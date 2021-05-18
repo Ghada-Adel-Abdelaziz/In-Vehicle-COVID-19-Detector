@@ -2,7 +2,7 @@
  * CAN.C
  *
  *  Created on: May 5, 2021
- *      Author: Toqa & Ghada
+ *      Author: Ghada & Toaa
  */
 
 #include <stdio.h>
@@ -15,6 +15,53 @@
 #include "GPIO_lcfg.h"
 #include "GPIO.h"
 #include "GPIO_cfg.h"
+
+#define CAN_BUS_TIME_REG_VALUE                                                          0x004bc004
+#define NUM_OF_MAIL_BOXES                                                                    3
+
+#define STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_TX_MAIL_BOX_IDENTIFIER_REG               21
+#define EXTENDED_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_TX_MAIL_BOX_IDENTIFIER_REG               3
+
+#define STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG     21
+#define EXTENDED_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG     3
+
+#define 1ST_DATA_BYTE_IN_CAN_TDLR_REG                                                        0
+#define 2ND_DATA_BYTE_IN_CAN_TDLR_REG                                                        1
+#define 3RD_DATA_BYTE_IN_CAN_TDLR_REG                                                        2
+#define 4TH_DATA_BYTE_IN_CAN_TDLR_REG                                                        3
+
+#define DATA_BYTE_3_BIT_POSITION_IN_CAN_TDLR_REG                                             24
+#define DATA_BYTE_2_BIT_POSITION_IN_CAN_TDLR_REG                                             16
+#define DATA_BYTE_1_BIT_POSITION_IN_CAN_TDLR_REG                                             8
+
+#define 1ST_DATA_BYTE_IN_CAN_TDHR_REG                                                        4
+#define 2ND_DATA_BYTE_IN_CAN_TDHR_REG                                                        5
+#define 3RD_DATA_BYTE_IN_CAN_TDHR_REG                                                        6
+#define 4TH_DATA_BYTE_IN_CAN_TDHR_REG                                                        7
+
+#define DATA_BYTE_7_BIT_POSITION_IN_CAN_TDHR_REG                                             24
+#define DATA_BYTE_6_BIT_POSITION_IN_CAN_TDHR_REG                                             16
+#define DATA_BYTE_5_BIT_POSITION_IN_CAN_TDHR_REG                                             8
+
+#define 1ST_DATA_BYTE_IN_CAN_RDLR_REG                                                        0
+#define 2ND_DATA_BYTE_IN_CAN_RDLR_REG                                                        1
+#define 3RD_DATA_BYTE_IN_CAN_RDLR_REG                                                        2
+#define 4TH_DATA_BYTE_IN_CAN_RDLR_REG                                                        3
+
+#define DATA_BYTE_3_BIT_POSITION_IN_CAN_RDLR_REG                                             24
+#define DATA_BYTE_2_BIT_POSITION_IN_CAN_RDLR_REG                                             16
+#define DATA_BYTE_1_BIT_POSITION_IN_CAN_RDLR_REG                                             8
+
+#define 1ST_DATA_BYTE_IN_CAN_RDHR_REG                                                        4
+#define 2ND_DATA_BYTE_IN_CAN_RDHR_REG                                                        5
+#define 3RD_DATA_BYTE_IN_CAN_RDHR_REG                                                        6
+#define 4TH_DATA_BYTE_IN_CAN_RDHR_REG                                                        7
+
+#define DATA_BYTE_7_BIT_POSITION_IN_CAN_RDHR_REG                                             24
+#define DATA_BYTE_6_BIT_POSITION_IN_CAN_RDHR_REG                                             16
+#define DATA_BYTE_5_BIT_POSITION_IN_CAN_RDHR_REG                                             8
+
+#define LAST_FILTER_ID                                                                       13
 
 CAN_msg       CAN_TxMsg[3];                          // CAN messge for sending
 CAN_msg       CAN_RxMsg[3];                          // CAN message for receiving
@@ -53,14 +100,10 @@ void CAN_init(void)  {
 
 	/* set BTR register so that sample point is at about 72% bit time from bit start */
 	/* TSEG1 = 12, TSEG2 = 5, SJW = 4 => 1 CAN bit = 18 TQ, sample at 72%    */
-	CAN1->BTR &= ~(((        0x03) << 24) | ((        0x07) << 20) | ((         0x0F) << 16) | (          0x1FF));
-	CAN1->BTR |=  ((((4-1) & 0x03) << 24) | (((5-1) & 0x07) << 20) | (((12-1) & 0x0F) << 16) | ((brp-1) & 0x1FF));
+
+	CAN1->BTR = CAN_BUS_TIME_REG_VALUE;
 
 	CAN_wrFilter( );
-
-	CAN1->BTR &= ~(CAN_BTR_SILM | CAN_BTR_LBKM);     // set testmode
-
-	CAN1->BTR |=  (3 & (CAN_BTR_SILM | CAN_BTR_LBKM));
 
 	CAN1->MCR &= ~(CAN_MCR_INRQ);                      // normal operating mode, reset INRQ
 	while (CAN1->MSR & CAN_MCR_INRQ);
@@ -87,14 +130,14 @@ static void CAN_waitReady (void)  {
 /*----------------------------------------------------------------------------
   wite a message to CAN peripheral and transmit it
  ----------------------------------------------------------------------------*/
-void CAN_wrMsg (CAN_msg *msg)  {
+void CAN_wrMsg (CAN_msg *msg, u8 u8MessageID, u8 u8Frame, u8 u8DataLength)  {
 
 	uint8_t u8MailBoxIndex = 0;
 	uint8_t u8DataCounter = 0;
 	uint8_t u8PendingMsgID = 0;
 	uint8_t u8Counter = 0;
 	CAN_Transmission_STATUS returnValue ;
-	for (u8MailBoxIndex = 0; u8MailBoxIndex < 3; u8MailBoxIndex++)
+	for (u8MailBoxIndex = 0; u8MailBoxIndex < NUM_OF_MAIL_BOXES; u8MailBoxIndex++)
 	{
 		if (CAN_TxRdy[u8MailBoxIndex] == 1)
 		{
@@ -108,31 +151,61 @@ void CAN_wrMsg (CAN_msg *msg)  {
 		}
 	}
 
-	if (u8MailBoxIndex < 3)
+	if (u8MailBoxIndex < NUM_OF_MAIL_BOXES)
 	{
 		CAN1->sTxMailBox[u8MailBoxIndex].TIR  = (uint32_t)0;      // Reset TIR register
 		// Setup identifier information
 		if (msg->format == STANDARD_FORMAT)
 		{
-			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (uint32_t)(msg->id << 21) | (CAN_ID_STD);
+			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (uint32_t)(msg->id << STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_TX_MAIL_BOX_IDENTIFIER_REG) | (CAN_ID_STD);
 		}
 		else
 		{    // Extended ID
 
-			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (uint32_t)(msg->id <<  3) | (CAN_ID_EXT);
+			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (uint32_t)(msg->id <<  EXTENDED_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_TX_MAIL_BOX_IDENTIFIER_REG) | (CAN_ID_EXT);
 		}
 		// Setup type information
 		if (msg->type == DATA_FRAME)
 		{   // DATA FRAME
 			CAN1->sTxMailBox[u8MailBoxIndex].TIR |= (CAN_RTR_DATA);
-			CAN1->sTxMailBox[u8MailBoxIndex].TDLR = (((uint32_t)msg->data[3] << 24) |
-					((uint32_t)msg->data[2] << 16) |
-					((uint32_t)msg->data[1] <<  8) |
-					((uint32_t)msg->data[0])        );
-			CAN1->sTxMailBox[u8MailBoxIndex].TDHR = (((uint32_t)msg->data[7] << 24) |
-					((uint32_t)msg->data[6] << 16) |
-					((uint32_t)msg->data[5] <<  8) |
-					((uint32_t)msg->data[4])        );
+			CAN1->sTxMailBox[u8MailBoxIndex].TDLR = (((uint32_t)msg->data[4TH_DATA_BYTE_IN_CAN_TDLR_REG] << DATA_BYTE_3_BIT_POSITION_IN_CAN_TDLR_REG) |
+					((uint32_t)msg->data[3RD_DATA_BYTE_IN_CAN_TDLR_REG] << DATA_BYTE_2_BIT_POSITION_IN_CAN_TDLR_REG) |
+					((uint32_t)msg->data[2ND_DATA_BYTE_IN_CAN_TDLR_REG] << DATA_BYTE_1_BIT_POSITION_IN_CAN_TDLR_REG) |
+					((uint32_t)msg->data[1ST_DATA_BYTE_IN_CAN_TDLR_REG])        );
+
+			CAN1->sTxMailBox[u8MailBoxIndex].TDHR = (((uint32_t)msg->data[4TH_DATA_BYTE_IN_CAN_RDHR_REG] << DATA_BYTE_7_BIT_POSITION_IN_CAN_TDHR_REG) |
+					((uint32_t)msg->data[3RD_DATA_BYTE_IN_CAN_RDHR_REG] << DATA_BYTE_6_BIT_POSITION_IN_CAN_TDHR_REG) |
+					((uint32_t)msg->data[2ND_DATA_BYTE_IN_CAN_RDHR_REG] << DATA_BYTE_5_BIT_POSITION_IN_CAN_TDHR_REG) |
+					((uint32_t)msg->data[1ST_DATA_BYTE_IN_CAN_RDHR_REG])        );
+
+			/* Send Message */
+			switch (u8Frame)
+			{
+			case CAN_u8REMOTEFRAME:
+				CAN_TxMsg[u8MailBoxIndex].type = REMOTE_FRAME;
+				CAN_TxMsg[u8MailBoxIndex].id = u8MessageID;                              // initialise message to send
+				CAN_TxMsg[u8MailBoxIndex].len = u8DataLength;
+				CAN_TxMsg[u8MailBoxIndex].format = STANDARD_FORMAT;
+				CAN_TxRdy[u8MailBoxIndex] = 0;
+				CAN_wrMsg(&(CAN_TxMsg[u8MailBoxIndex]), u8MailBoxIndex);
+				break;
+
+			case CAN_u8DATAFRAME:
+				CAN_TxMsg[u8MailBoxIndex].type = DATA_FRAME;
+				CAN_TxMsg[u8MailBoxIndex].id = u8MessageID;                              // initialise message to send
+
+				for (u8DataCounter = 0; u8DataCounter < u8DataLength; u8DataCounter++)
+				{
+					CAN_TxMsg[u8MailBoxIndex].data[u8DataCounter] = msg[u8DataCounter];
+				}
+
+				CAN_TxMsg[u8MailBoxIndex].len = u8DataLength;
+				CAN_TxMsg[u8MailBoxIndex].format = STANDARD_FORMAT;
+				CAN_TxRdy[u8MailBoxIndex] = 0;
+				CAN_wrMsg(&(CAN_TxMsg[u8MailBoxIndex]), u8MailBoxIndex);
+				break;
+
+			}
 		}
 		else
 		{                  // REMOTE FRAME
@@ -161,11 +234,11 @@ void CAN_rdMsg (CAN_msg *msg)  {
 		msg->format = STANDARD_FORMAT;
 
 
-		msg->id     = (uint32_t)0x000007FF & (CAN1->sFIFOMailBox[0].RIR >> 21);
+		msg->id     = (uint32_t)0x000007FF & (CAN1->sFIFOMailBox[0].RIR >> STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG);
 	}  else  {                                          // Extended ID
 		msg->format = EXTENDED_FORMAT;
 
-		msg->id     = (uint32_t)0x0003FFFF & (CAN1->sFIFOMailBox[0].RIR >> 3);
+		msg->id     = (uint32_t)0x0003FFFF & (CAN1->sFIFOMailBox[0].RIR >> EXTENDED_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG);
 	}
 	// Read type information
 	if ((CAN1->sFIFOMailBox[0].RIR & CAN_RTR_REMOTE) == 0) {
@@ -178,15 +251,15 @@ void CAN_rdMsg (CAN_msg *msg)  {
 	// Read length (number of received bytes)
 	msg->len = (uint8_t)0x0000000F & CAN1->sFIFOMailBox[0].RDTR;
 	// Read data bytes
-	msg->data[0] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR);
-	msg->data[1] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR >> 8);
-	msg->data[2] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR >> 16);
-	msg->data[3] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR >> 24);
+	msg->data[1ST_DATA_BYTE_IN_CAN_RDLR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR);
+	msg->data[2ND_DATA_BYTE_IN_CAN_RDLR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR >> DATA_BYTE_1_BIT_POSITION_IN_CAN_RDLR_REG);
+	msg->data[3RD_DATA_BYTE_IN_CAN_RDLR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR >> DATA_BYTE_2_BIT_POSITION_IN_CAN_RDLR_REG);
+	msg->data[4TH_DATA_BYTE_IN_CAN_RDLR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDLR >> DATA_BYTE_3_BIT_POSITION_IN_CAN_RDLR_REG);
 
-	msg->data[4] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR);
-	msg->data[5] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR >> 8);
-	msg->data[6] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR >> 16);
-	msg->data[7] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR >> 24);
+	msg->data[1ST_DATA_BYTE_IN_CAN_RDHR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR);
+	msg->data[2ND_DATA_BYTE_IN_CAN_RDHR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR >> DATA_BYTE_5_BIT_POSITION_IN_CAN_RDHR_REG);
+	msg->data[3RD_DATA_BYTE_IN_CAN_RDHR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR >> DATA_BYTE_6_BIT_POSITION_IN_CAN_RDHR_REG);
+	msg->data[4TH_DATA_BYTE_IN_CAN_RDHR_REG] = (uint32_t)0x000000FF & (CAN1->sFIFOMailBox[0].RDHR >> DATA_BYTE_7_BIT_POSITION_IN_CAN_RDHR_REG);
 	CAN_vidReleaseMessage();
 
 }
@@ -202,15 +275,15 @@ void CAN_wrFilter ()  {
 	for (CAN_filterIdx = 0 ; CAN_filterIdx < NUMBER_OF_CONFIGURED_CAN_FILTERS; CAN_filterIdx++)
 	{
 		// Enable reception of messages
-		if (CAN_filterIdx > 13) {                       // check if Filter Memory is full
+		if (CAN_filterIdx > LAST_FILTER_ID) {                       // check if Filter Memory is full
 			return;
 		}
 		// Setup identifier information
 		if (CAN_filters_Array[CAN_filterIdx].u8Id == STANDARD_FORMAT)  {               // Standard ID
-			CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << 21) | CAN_ID_STD;
+			CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG ) | CAN_ID_STD;
 
 		}  else  {                                      // Extended ID
-			CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id <<  3) | CAN_ID_EXT;
+			CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << EXTENDED_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG ) | CAN_ID_EXT;
 		}
 		if (CAN_filters_Array[CAN_filterIdx].u8Frame == REMOTE_FRAME)  {               // Standard ID
 			CAN_msgId  |= CAN_RTR_REMOTE;
@@ -244,7 +317,7 @@ static void CAN_vidReleaseMessage(void)
 
 /*----------------------------------------------------------------------------
 CAN transmit interrupt handler
-*----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
 void USB_HP_CAN1_TX_IRQHandler (void) {
 
 	if (CAN1->TSR & (CAN_TSR_RQCP0)) 						  // request completed mbx 0
@@ -288,7 +361,6 @@ void USB_LP_CAN1_RX0_IRQHandler (void) {
 		CAN_rdMsg_0 (&(CAN_RxMsg[u8RxMsgIndex]));                     // read the message
 		CAN_RxMsg[u8RxMsgIndex].u8ActiveFlag = 1;
 		CAN_RxRdy = 1;                                // set receive flag
-		
+
 	}
 }
-
