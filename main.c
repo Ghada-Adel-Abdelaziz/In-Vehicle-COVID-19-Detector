@@ -74,9 +74,27 @@ int main(void)
 	Buzzer_Req(  2 ,  1 ,  1 ,   LOW_POWER);
 	//Buzzer_Req(  3 ,  4 ,  1 ,   MEDIUM_POWER);
 
+CAN_init();
+	CAN_IRQConfig(19, ENABLE);
+	CAN_IRQConfig(20, ENABLE);
+	CAN_msg CAN_TxMsg;
+	CAN_TxMsg.id = 60;                              //initialise message to send
+	for (i = 0; i < 8; i++) CAN_TxMsg.data[i] = 3;
+	CAN_TxMsg.len = 8;
+	CAN_TxMsg.format = STANDARD_FORMAT;
+	CAN_TxMsg.type = DATA_FRAME;
+
+	CAN_wrMsg      (&(CAN_TxMsg));
 	//HR_Sensor_Cmd(HR_SENSOR_PREPH_ID, 1);
 	while (1)
 	{
+		
+		//can test 
+		while (CAN_RxRdy == 0);
+
+		if (CAN_RxRdy)
+		{
+			CAN_RxRdy = 0;
 
 		//PWM_Set_Duty(TIMER2_,100);
 

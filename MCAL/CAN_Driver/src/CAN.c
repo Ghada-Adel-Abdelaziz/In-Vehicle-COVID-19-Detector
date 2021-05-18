@@ -16,7 +16,7 @@
 #include "GPIO.h"
 #include "GPIO_cfg.h"
 
-#define CAN_BUS_TIME_REG_VALUE                                                          0x004bc004
+#define CAN_BUS_TIME_REG_VALUE                                                          0X40060004
 #define NUM_OF_MAIL_BOXES                                                                    3
 
 #define STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_TX_MAIL_BOX_IDENTIFIER_REG               21
@@ -82,13 +82,19 @@ static void CAN_waitReady (void);
 static void CAN_vidReleaseMessage(void);
 
 static void CAN_wrFilter (void);
+
+
+static void CAN_PeriClockControl(uint8_t CAN_ID,uint8_t EnCLK)
+{
+	TIM_PCLK_EN = (TIM_PCLK_EN & ~(One_bit_shift << CAN_ID+25)) | (EnCLK << CAN_ID+25);
+}
 /*----------------------------------------------------------------------------
   setup CAN interface
  *----------------------------------------------------------------------------*/
 void CAN_init(void)  {
 
 
-	uint32_t brp =  36000000;			//clock 36Mhz (salma)
+	CAN_PeriClockControl( CAN_1, 1);
 
 	CAN1->MCR = (CAN_MCR_INRQ);       				// init mode, enable auto. retransmission                                         // Note: only FIFO 0,
 	//transmit mailbox 0 used
@@ -96,7 +102,7 @@ void CAN_init(void)  {
 	CAN1->IER = (CAN_IER_FMPIE0 | CAN_IER_TMEIE);    // FIFO 0 msg pending, Transmit mbx empty (enable interrupts)
 
 	/* Note: this calculations fit for PCLK1 = 36MHz */
-	brp  = (brp / 18) / 500000;                     // baudrate is set to 500k bit/s
+	                  
 
 	/* set BTR register so that sample point is at about 72% bit time from bit start */
 	/* TSEG1 = 12, TSEG2 = 5, SJW = 4 => 1 CAN bit = 18 TQ, sample at 72%    */
@@ -279,7 +285,7 @@ void CAN_wrFilter ()  {
 			return;
 		}
 		// Setup identifier information
-		if (CAN_filters_Array[CAN_filterIdx].u8Id == STANDARD_FORMAT)  {               // Standard ID
+		if (CAN_filters_Array[CAN_filterIdx].u8Type == STANDARD_FORMAT)  {               // Standard ID
 			CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG ) | CAN_ID_STD;
 
 		}  else  {                                      // Extended ID
@@ -313,12 +319,31 @@ static void CAN_vidReleaseMessage(void)
 {
 	CAN1->RF0R |= CAN_RF0R_RFOM0;
 }
+/**********NVIC******/
+void CAN_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)
+{
+	uint8_t ISER_Num=0;
+	uint8_t IRQActualNumber=0;
 
+	ISER_Num = IRQNumber / 32;
+	IRQActualNumber = IRQNumber % 32;
+
+	switch(EnorDi)
+	{
+	case 1:
+		NVIC_ISER_Base_Addr[ISER_Num] = 1<< IRQActualNumber;
+		break;
+	case 0:
+		NVIC_ICER_Base_Addr[ISER_Num] = 1<< IRQActualNumber;
+		break;
+	}
+}
+/*****END****/
 
 /*----------------------------------------------------------------------------
 CAN transmit interrupt handler
  *----------------------------------------------------------------------------*/
-void USB_HP_CAN1_TX_IRQHandler (void) {
+void CAN1_TX_IRQHandler (void) {
 
 	if (CAN1->TSR & (CAN_TSR_RQCP0)) 						  // request completed mbx 0
 	{
@@ -346,7 +371,7 @@ void USB_HP_CAN1_TX_IRQHandler (void) {
 /*----------------------------------------------------------------------------
   CAN receive interrupt handler
  *----------------------------------------------------------------------------*/
-void USB_LP_CAN1_RX0_IRQHandler (void) {
+void CAN1_RX0_IRQHandler (void) {
 	uint8_t u8RxMsgIndex = 0;
 	if (CAN1->RF0R & CAN__Msg_Pending)
 	{			      // message pending ?

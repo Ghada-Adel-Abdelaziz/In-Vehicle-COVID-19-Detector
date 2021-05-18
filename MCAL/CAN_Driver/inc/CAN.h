@@ -35,6 +35,8 @@ extern uint8_t  CAN_RxRdy;
 void CAN_init          (void);
 void CAN_wrMsg (CAN_msg *msg, u8 u8MessageID, u8 u8Frame, u8 u8DataLength);
 void CAN_rdMsg      (CAN_msg *msg);
+void CAN_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi);
+
 
 
 
