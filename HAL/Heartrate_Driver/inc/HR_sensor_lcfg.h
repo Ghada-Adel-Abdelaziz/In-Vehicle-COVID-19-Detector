@@ -11,14 +11,16 @@
 
 typedef struct
 {
-     uint8_t sensor_id;
+     uint8_t Sensor_PrephID;
+     uint8_t Sensor_chID;
 } HR_Sensor_Config_t;
 
 
 
-#define SENSOR1_ID   ADC_Channel_1
-#define SENSOR2_ID   ADC_Channel_2
-#define SENSOR3_ID   ADC_Channel_3
+#define HR_SENSOR_CH_ID   ADC_Channel_1
+
+
+#define HR_SENSOR_PREPH_ID    ADC_1
 
 
 
