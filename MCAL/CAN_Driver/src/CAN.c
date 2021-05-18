@@ -62,7 +62,7 @@
 #define DATA_BYTE_5_BIT_POSITION_IN_CAN_RDHR_REG                                             8
 
 #define LAST_FILTER_ID                                                                       13
-
+//HA Review: All variables to be static
 CAN_msg       CAN_TxMsg[3];                          // CAN messge for sending
 CAN_msg       CAN_RxMsg[3];                          // CAN message for receiving
 uint8_t CAN_TxRdy[3] = {0};                      // CAN HW ready to transmit a message
@@ -123,6 +123,7 @@ void CAN_init(void)  {
  *----------------------------------------------------------------------------*/
 static void CAN_waitReady (void)  {
 
+//HA Review: no wait loops without timeout
 	while ((CAN1->TSR & CAN_TSR_TME0) == 0);         // Transmit mailbox 0 is empty
 	while ((CAN1->TSR & CAN_TSR_TME1) == 0);         // Transmit mailbox 0 is empty
 	while ((CAN1->TSR & CAN_TSR_TME2) == 0);         // Transmit mailbox 0 is empty
@@ -136,6 +137,7 @@ static void CAN_waitReady (void)  {
 /*----------------------------------------------------------------------------
   wite a message to CAN peripheral and transmit it
  ----------------------------------------------------------------------------*/
+ //HA Review: function should not return void
 void CAN_wrMsg (CAN_msg *msg, u8 u8MessageID, u8 u8Frame, u8 u8DataLength)  {
 
 	uint8_t u8MailBoxIndex = 0;
@@ -233,6 +235,7 @@ void CAN_wrMsg (CAN_msg *msg, u8 u8MessageID, u8 u8Frame, u8 u8DataLength)  {
 /*----------------------------------------------------------------------------
   read a message from CAN peripheral and release it
  ----------------------------------------------------------------------------*/
+ //HA to be static and to add a new function to read received data
 void CAN_rdMsg (CAN_msg *msg)  {
 	// Read identifier information
 	if ((CAN1->sFIFOMailBox[0].RIR & CAN_ID_EXT) == 0) { // Standard ID
@@ -343,6 +346,7 @@ void CAN_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)
 /*----------------------------------------------------------------------------
 CAN transmit interrupt handler
  *----------------------------------------------------------------------------*/
+//HA To add a Tx done callback notification
 void CAN1_TX_IRQHandler (void) {
 
 	if (CAN1->TSR & (CAN_TSR_RQCP0)) 						  // request completed mbx 0
@@ -371,6 +375,7 @@ void CAN1_TX_IRQHandler (void) {
 /*----------------------------------------------------------------------------
   CAN receive interrupt handler
  *----------------------------------------------------------------------------*/
+//HA RX Notific to be added.
 void CAN1_RX0_IRQHandler (void) {
 	uint8_t u8RxMsgIndex = 0;
 	if (CAN1->RF0R & CAN__Msg_Pending)

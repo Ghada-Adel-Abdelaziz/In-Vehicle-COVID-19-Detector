@@ -27,6 +27,7 @@ typedef struct
 	uint8_t u8Type;
 }filter_type;
 
+//HA Review: all registers structures to be moved to .c file
 typedef struct
 {
 	uint32_t TIR;

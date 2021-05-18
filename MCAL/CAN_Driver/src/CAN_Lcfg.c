@@ -11,7 +11,7 @@
 #include "CAN_cfg.h"
 #include "CAN_Lcfg.h"
 
-filter_type CAN_filters_Array [ NUMBER_OF_CONFIGURED_CAN_FILTERS ] =
+filter_type CAN_filters_Array [ NUMBER_OF_CONFIGURED_CAN_FILTERS ] = //HA Review: To be increased
 {
 
 		{60, DATA_FRAME, STANDARD_FORMAT}
