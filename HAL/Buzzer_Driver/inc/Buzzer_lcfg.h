@@ -2,7 +2,7 @@
  * HR_sensor_lcdg.h
  *
  *  Created on: May 9, 2021
- *      Author: mas
+ *      Author: Toaa & Ghada
  */
 #include "Buzzer_cfg.h"
 

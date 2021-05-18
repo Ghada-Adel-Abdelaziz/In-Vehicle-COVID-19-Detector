@@ -1,13 +1,10 @@
 /*
- * HR_sensor_lcdg.c
+ * Buzzer_stubs.c
  *
- *  Created on: May 9, 2021
- *      Author: Toaa & Ghada
+ *  Created on: Feb 27, 2021
+ *      Author: Ghada & Toaa
  */
 
-#include "Buzzer_cfg.h"
-#include "Buzzer_lcfg.h"
-#include "Buzzer.h"
 
 #include "GPIO.h"
 #include "GPIO_Lcfg.h"
@@ -31,7 +28,3 @@ void Buzzer_Cycle_Complete_Callback(void)
 
 }
 
-Buzzer_Config_t Buzzer_ConfigArray[NUMBER_OF_CONFIGURED_BUZZER] =
-{
-		{ BUZZER1_PREPH_ID , BUZZER1_CH_ID , Buzzer_Cycle_Complete_Callback}
-};

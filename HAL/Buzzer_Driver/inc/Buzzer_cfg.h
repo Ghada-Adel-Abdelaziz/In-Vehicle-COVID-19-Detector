@@ -2,7 +2,7 @@
  * HR_sensor_cfg.h
  *
  *  Created on: May 9, 2021
- *      Author: mas
+ *      Author: Toaa & Ghada
  */
 
 #ifndef HR_SENSOR_CFG_H_
