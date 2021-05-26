@@ -13,8 +13,8 @@
 
 typedef enum
 {
-	IDLE,
-	ENABLED
+	HR_DISABLE,
+	HR_ENABLE
 }SENSOR_STATUS;
 
 
@@ -22,6 +22,7 @@ void HR_Sensor_Init(void);
 void HR_Sensor_Read( uint16_t *data);
 //void HR_Sensor_Enable(uint8_t sensor_PrephID);
 void HR_Sensor_Cmd(uint8_t sensor_PrephID , SENSOR_STATUS sensor_cmd);
+void HR_Sensor_Manage(void);
 
 
 
