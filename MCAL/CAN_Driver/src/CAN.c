@@ -138,7 +138,7 @@ static void CAN_waitReady (void)  {
 
 	uint32_t counter = 0 ;
 
-	while ( ( (CAN1->TSR & CAN_TSR_TME0) == 0) && (counter < 10) );         // Transmit mailbox 0 is empty
+	while ( ( (CAN1->TSR & CAN_TSR_TME0) == 0) && (counter < 10) );   //Magic numbers are not allowed      // Transmit mailbox 0 is empty
 	{
 		counter++;
 	}
@@ -421,7 +421,7 @@ void CAN1_RX0_IRQHandler (void) {
 	RX_ptr[CAN_1]();
 
 }
-CAN_Get_MSG_STATUS get_MSG(CAN_msg *MSG){
+CAN_Get_MSG_STATUS get_MSG(CAN_msg *MSG){//Function name to be updated
 	static uint8_t Rx_index=0;
 	if(Rx_Counter>0){
 		MSG->id = CAN_RxMsg[Rx_index].id

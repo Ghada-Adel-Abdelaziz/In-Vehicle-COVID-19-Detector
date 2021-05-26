@@ -10,7 +10,7 @@
 
 /* Description:	Maximum Number of Filters ion filters array					*/
 /* Range:		1 ~ 13														*/
-#include "stm32f4xxx.h"
+#include "stm32f4xxx.h"//HA ToBe removed
 #define CANHANDLER_u8MAXFILTERNUMBERS		13
 
 #define NUMBER_OF_CAN                       1
