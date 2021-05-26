@@ -34,7 +34,6 @@ typedef struct
                                          This parameter can be a value of @ref I2C_acknowledged_address */
 
   void (*TX_CompleteFunptr)(void);
-  void (*RX_CompleteFunptr)(void);
 }I2C_Config_t;
 
 

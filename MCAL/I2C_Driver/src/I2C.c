@@ -105,8 +105,7 @@ typedef struct
 	volatile uint8_t Flag;
 }I2C_RxDetails_t;
 
-static void (*TX_ptr[NUM_OF_I2C])(void);
-static void (*RX_ptr[NUM_OF_I2C])(void);
+static void (*Transfer_Complete_Fptr[NUM_OF_I2C])(void);
 
 static I2C_TxDetails_t I2C_IntTxeDetails[NUM_OF_I2C]={0};
 
@@ -333,8 +332,7 @@ void I2C_Init(void)
 
         temp = 0;
 
-        TX_ptr[I2C_ConfigArray[counter].I2C_ID] = I2C_ConfigArray[counter].TX_CompleteFunptr;
-        RX_ptr[I2C_ConfigArray[counter].I2C_ID] = I2C_ConfigArray[counter].RX_CompleteFunptr;
+        Transfer_Complete_Fptr[I2C_ConfigArray[counter].I2C_ID] = I2C_ConfigArray[counter].TX_CompleteFunptr;
 	}
 
 
@@ -557,7 +555,7 @@ void I2C1_EV_IRQHandler(void)
 				I2C_IntTxeDetails[I2C_1].Flag = I2C_TXE_NOT_BUSY;
 
 				I2C_Current_Status = IDLE;
-				TX_ptr[I2C_1]();
+				Transfer_Complete_Fptr[I2C_1]();
 			}
 
 		}
@@ -581,7 +579,6 @@ void I2C1_EV_IRQHandler(void)
 
 			receiving_sequence = 0;
 
-			RX_ptr[I2C_1]();
 		}
 	}
 

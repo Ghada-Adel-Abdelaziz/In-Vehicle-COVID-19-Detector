@@ -11,8 +11,9 @@
 #include "I2C_cfg.h"
 #include "I2C_stubs.h"
 
+extern void Sensor_Data_Transfer_Complete_CallBack(void);
 
  I2C_Config_t I2C_ConfigArray[NUMBER_OF_CONFIGURED_I2C]=
 {
-		{I2C_1, I2C_Mode_I2C, I2C_DutyCycle_2, I2C_Ack_Enable, I2C_Address_7bit},
+		{I2C_1, I2C_Mode_I2C, I2C_DutyCycle_2, I2C_Ack_Enable, I2C_Address_7bit, Sensor_Data_Transfer_Complete_CallBack},
 };
