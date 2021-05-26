@@ -67,21 +67,27 @@ CAN_msg       CAN_TxMsg[3];                          // CAN messge for sending
 CAN_msg       CAN_RxMsg[3];                          // CAN message for receiving
 uint8_t CAN_TxRdy[3] = {0};                      // CAN HW ready to transmit a message
 uint8_t  CAN_RxRdy = {0};                      // CAN HW received a message
-uint32_t  filt_counter;
+static uint32_t  filt_counter;
 
-uint8_t value_0[8];
-uint8_t u8MailBox0Flag;
-uint8_t value_1[8];
-uint8_t u8MailBox1Flag;
-uint8_t value_2[8];
-uint8_t u8MailBox2Flag;
+static uint8_t value_0[8];
+static uint8_t u8MailBox0Flag;
+static uint8_t value_1[8];
+static uint8_t u8MailBox1Flag;
+static uint8_t value_2[8];
+static uint8_t u8MailBox2Flag;
+static uint8_t Rx_Counter=0;
 
 static CAN_TypeDef* CAN_Arr[NUM_OF_CAN] = {CAN_1, CAN_2};
+
+
+void (*TX_ptr[NUM_OF_CAN])(void);
+void (*RX_ptr[NUM_OF_CAN])(void);
 
 static void CAN_waitReady (void);
 static void CAN_vidReleaseMessage(void);
 
 static void CAN_wrFilter (void);
+static void CAN_rdMsg      (CAN_msg *msg);
 
 
 static void CAN_PeriClockControl(uint8_t CAN_ID,uint8_t EnCLK)
@@ -92,7 +98,9 @@ static void CAN_PeriClockControl(uint8_t CAN_ID,uint8_t EnCLK)
   setup CAN interface
  *----------------------------------------------------------------------------*/
 void CAN_init(void)  {
-
+	uint8_t counter = 0 ;
+	for(counter; counter<NUMBER_OF_CONFIGURED_CAN;counter++)
+		{
 
 	CAN_PeriClockControl( CAN_1, 1);
 
@@ -116,6 +124,11 @@ void CAN_init(void)  {
 	GPIO_WriteOutputPin(GREEN_LED,1);
 
 	CAN_waitReady ();
+	// callback functions initialization
+	TX_ptr[CAN_Arr[counter]] = CAN_config[counter].TX_CompleteFunptr;
+	RX_ptr[CAN_Arr[counter]] = CAN_config[counter].RX_CompleteFunptr;
+	}
+
 }
 
 /*----------------------------------------------------------------------------
@@ -123,10 +136,20 @@ void CAN_init(void)  {
  *----------------------------------------------------------------------------*/
 static void CAN_waitReady (void)  {
 
-//HA Review: no wait loops without timeout
-	while ((CAN1->TSR & CAN_TSR_TME0) == 0);         // Transmit mailbox 0 is empty
-	while ((CAN1->TSR & CAN_TSR_TME1) == 0);         // Transmit mailbox 0 is empty
-	while ((CAN1->TSR & CAN_TSR_TME2) == 0);         // Transmit mailbox 0 is empty
+	uint32_t counter = 0 ;
+
+	while ( ( (CAN1->TSR & CAN_TSR_TME0) == 0) && (counter < 10) );         // Transmit mailbox 0 is empty
+	{
+		counter++;
+	}
+	while ( ( (CAN1->TSR & CAN_TSR_TME1) == 0) && (counter < 10) );         // Transmit mailbox 0 is empty
+	{
+		counter++;
+	}
+	while ( ( (CAN1->TSR & CAN_TSR_TME2) == 0) && (counter < 10) );         // Transmit mailbox 0 is empty
+	{
+		counter++;
+	}
 
 	CAN_TxRdy[0] = 1;
 	CAN_TxRdy[1] = 1;
@@ -137,8 +160,8 @@ static void CAN_waitReady (void)  {
 /*----------------------------------------------------------------------------
   wite a message to CAN peripheral and transmit it
  ----------------------------------------------------------------------------*/
- //HA Review: function should not return void
-void CAN_wrMsg (CAN_msg *msg, u8 u8MessageID, u8 u8Frame, u8 u8DataLength)  {
+
+CAN_Transmission_STATUS CAN_wrMsg (const CAN_msg *msg)  {
 
 	uint8_t u8MailBoxIndex = 0;
 	uint8_t u8DataCounter = 0;
@@ -186,7 +209,8 @@ void CAN_wrMsg (CAN_msg *msg, u8 u8MessageID, u8 u8Frame, u8 u8DataLength)  {
 					((uint32_t)msg->data[2ND_DATA_BYTE_IN_CAN_RDHR_REG] << DATA_BYTE_5_BIT_POSITION_IN_CAN_TDHR_REG) |
 					((uint32_t)msg->data[1ST_DATA_BYTE_IN_CAN_RDHR_REG])        );
 
-			/* Send Message */
+			/* Send Me
+			ssage */
 			switch (u8Frame)
 			{
 			case CAN_u8REMOTEFRAME:
@@ -346,7 +370,7 @@ void CAN_IRQConfig(uint8_t IRQNumber, uint8_t EnorDi)
 /*----------------------------------------------------------------------------
 CAN transmit interrupt handler
  *----------------------------------------------------------------------------*/
-//HA To add a Tx done callback notification
+
 void CAN1_TX_IRQHandler (void) {
 
 	if (CAN1->TSR & (CAN_TSR_RQCP0)) 						  // request completed mbx 0
@@ -370,27 +394,47 @@ void CAN1_TX_IRQHandler (void) {
 		CAN1->IER &= ~(CAN_IER_TMEIE);                   // disable  TME interrupt
 		CAN_TxRdy[2] = 1;
 	}
+	TX_ptr[CAN_1]();
 }
 
 /*----------------------------------------------------------------------------
   CAN receive interrupt handler
  *----------------------------------------------------------------------------*/
-//HA RX Notific to be added.
+
 void CAN1_RX0_IRQHandler (void) {
+	static uint8_t Rx_index=0;
 	uint8_t u8RxMsgIndex = 0;
 	if (CAN1->RF0R & CAN__Msg_Pending)
 	{			      // message pending ?
-		for (u8RxMsgIndex = 0; u8RxMsgIndex<3; u8RxMsgIndex++)
-		{
-			if (CAN_RxMsg[u8RxMsgIndex].u8ActiveFlag == 0)
-			{
-				break;
+        if(Rx_Counter<3){
+			CAN_rdMsg_0 (&(CAN_RxMsg[Rx_index]));
+			Rx_index++;
+			if(Rx_index==3){
+				Rx_index=0;
 			}
+			Rx_Counter++;
+			
+			
 		}
 
-		CAN_rdMsg_0 (&(CAN_RxMsg[u8RxMsgIndex]));                     // read the message
-		CAN_RxMsg[u8RxMsgIndex].u8ActiveFlag = 1;
-		CAN_RxRdy = 1;                                // set receive flag
-
 	}
+	RX_ptr[CAN_1]();
+
+}
+CAN_Get_MSG_STATUS get_MSG(CAN_msg *MSG){
+	static uint8_t Rx_index=0;
+	if(Rx_Counter>0){
+		MSG->id = CAN_RxMsg[Rx_index].id
+		MSG->data = CAN_RxMsg[Rx_index].data
+		MSG->len = CAN_RxMsg[Rx_index].len
+		MSG->format = CAN_RxMsg[Rx_index].format
+		MSG->type = CAN_RxMsg[Rx_index].type
+
+	Rx_index++;
+	Rx_Counter--;
+	if(Rx_index==3){
+				Rx_index=0;
+			}
+	}
+
 }
