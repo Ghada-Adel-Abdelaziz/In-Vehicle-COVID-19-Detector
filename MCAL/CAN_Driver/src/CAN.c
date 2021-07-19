@@ -308,31 +308,31 @@ void CAN_wrFilter ()  {
 	for (CAN_filterIdx = 0 ; CAN_filterIdx < NUMBER_OF_CONFIGURED_CAN_FILTERS; CAN_filterIdx++)
 	{
 		// Enable reception of messages
-		if (CAN_filterIdx > LAST_FILTER_ID) {                       // check if Filter Memory is full
-			return;
-		}
+		//if (CAN_filterIdx > LAST_FILTER_ID) {                       // check if Filter Memory is full
+		//	return;
+		//}
 		// Setup identifier information
-		if (CAN_filters_Array[CAN_filterIdx].u8Type == STANDARD_FORMAT)  {               // Standard ID
-			CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG ) | CAN_ID_STD;
+		//if (CAN_filters_Array[CAN_filterIdx].u8Type == STANDARD_FORMAT)  {               // Standard ID
+			//CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << STANDARD_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG ) | CAN_ID_STD;
 
-		}  else  {                                      // Extended ID
-			CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << EXTENDED_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG ) | CAN_ID_EXT;
-		}
-		if (CAN_filters_Array[CAN_filterIdx].u8Frame == REMOTE_FRAME)  {               // Standard ID
-			CAN_msgId  |= CAN_RTR_REMOTE;
-		}
-		else
-		{
+		//}  else  {                                      // Extended ID
+			//CAN_msgId  |= (uint32_t)(CAN_filters_Array[CAN_filterIdx].u8Id << EXTENDED_IDENTIFIER_1ST_BIT_POSITION_IN_CAN_RECEIVE_FIFO_MAIL_BOX_IDENTIFIER_REG ) | CAN_ID_EXT;
+		//}
+		//if (CAN_filters_Array[CAN_filterIdx].u8Frame == REMOTE_FRAME)  {               // Standard ID
+			//CAN_msgId  |= CAN_RTR_REMOTE;
+		//}
+		//else
+		//{
 
-		}
+		//}
 		CAN1->FA1R &=  ~(uint32_t)(1 << CAN_filterIdx); // deactivate filter
 
 		// initialize filter
 		CAN1->FS1R |= (uint32_t)(1 << CAN_filterIdx);// set 32-bit scale configuration
 		CAN1->FM1R |= (uint32_t)(1 << CAN_filterIdx);// set 2 32-bit identifier list mode
 
-		CAN1->sFilterRegister[CAN_filterIdx].FR1 = CAN_msgId; //  32-bit identifier
-		CAN1->sFilterRegister[CAN_filterIdx].FR2 = CAN_msgId; //  32-bit identifier
+		CAN1->sFilterRegister[CAN_filterIdx].FR1 = CAN_filters_Array[CAN_filterIdx].u8Id; //  32-bit identifier
+		CAN1->sFilterRegister[CAN_filterIdx].FR2 = 0; //  32-bit identifier
 
 		CAN1->FFA1R &= ~(uint32_t)(1 << CAN_filterIdx);  // assign filter to FIFO 0
 		CAN1->FA1R  |=  (uint32_t)(1 << CAN_filterIdx);  // activate filter
