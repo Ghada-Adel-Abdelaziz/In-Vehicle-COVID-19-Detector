@@ -1,0 +1,6 @@
+Communication_Manager.c:37:6:Communication_Manager_RX_Notification	8	static
+Communication_Manager.c:60:6:Communication_Handling	16	static
+Communication_Manager.c:95:6:Jetson_Req_Mask_Detection	4	static
+Communication_Manager.c:100:6:Jetson_Req_COVID_Detection	4	static
+Communication_Manager.c:105:6:Jetson_Req_API_Detection	4	static
+Communication_Manager.c:110:6:Communication_Manage	8	static

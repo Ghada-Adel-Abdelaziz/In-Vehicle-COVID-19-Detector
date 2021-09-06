@@ -1,0 +1,17 @@
+UART_Driver.c:143:13:USART_PeripheralControl	24	static
+UART_Driver.c:155:13:USART_PeriClockControl	16	static
+UART_Driver.c:175:20:USART_GetFlagStatus	24	static
+UART_Driver.c:187:6:USART_SetBaudRate	40	static
+UART_Driver.c:266:6:USART_Init	24	static
+UART_Driver.c:384:6:USART_SendDataRequest	24	static
+UART_Driver.c:392:19:TransmitDoneFeedback	16	static
+UART_Driver.c:481:6:USART_ReceiveDataRequest	24	static
+UART_Driver.c:489:19:ReceiveDoneFeedback	16	static
+UART_Driver.c:586:9:Uart_SendDataAsync	24	static
+UART_Driver.c:616:9:Uart_ReceiveDataASync	24	static
+UART_Driver.c:640:6:Uart_IntControl	24	static
+UART_Driver.c:659:6:UART_IRQConfig	24	static
+UART_Driver.c:684:6:USART2_IRQHandler	16	static
+UART_Driver.c:740:6:USART1_IRQHandler	8	static
+UART_Driver.c:789:6:USART3_IRQHandler	16	static
+UART_Driver.c:846:6:UART4_IRQHandler	16	static

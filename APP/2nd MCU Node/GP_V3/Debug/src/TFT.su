@@ -1,0 +1,7 @@
+TFT.c:58:6:TFT_Writing_Complete_CallBack	4	static
+TFT.c:63:6:TFT_Reading_Complete_CallBack	4	static
+TFT.c:69:21:TFT_Request_Writing	24	static
+TFT.c:110:21:TFT_Request_Reading	8	static
+TFT.c:119:6:TFT_Display_Text_Req	16	static
+TFT.c:142:6:TFT_Tx_Manage	16	static
+TFT.c:235:6:TFT_Rx_Manage	16	static

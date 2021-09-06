@@ -1,0 +1,5 @@
+HR_sensor.c:36:6:Conversion_Complete_CallBack	8	static
+HR_sensor.c:44:6:HR_Sensor_Init	8	static
+HR_sensor.c:53:6:HR_Sensor_Read	16	static
+HR_sensor.c:66:6:HR_Sensor_Cmd	16	static
+HR_sensor.c:86:6:HR_Sensor_Manage	8	static

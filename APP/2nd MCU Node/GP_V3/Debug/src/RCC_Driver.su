@@ -1,0 +1,3 @@
+RCC_Driver.c:16:10:RCC_GetPCLK1Value	24	static
+RCC_Driver.c:79:10:RCC_GetPCLK2Value	24	static
+RCC_Driver.c:117:11:RCC_GetPLLOutputClock	32	static

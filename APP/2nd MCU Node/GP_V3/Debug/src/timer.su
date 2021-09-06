@@ -1,0 +1,15 @@
+timer.c:103:13:Timer_PeriClockControl	16	static
+timer.c:109:13:TIM_GetFlagStatus	24	static
+timer.c:119:6:Timer_Init	24	static
+timer.c:167:6:TIM_OC_Init	24	static
+timer.c:323:6:Timer_SetCounter	24	static
+timer.c:332:6:Timer_SetAutoreload	24	static
+timer.c:341:6:Timer_Cmd	24	static
+timer.c:360:6:CC1R_SetValue	24	static
+timer.c:370:6:PWM_Set_Duty	24	static
+timer.c:382:6:TIM_Get_Period	24	static
+timer.c:390:6:TIM_IntControl	24	static
+timer.c:410:6:TIM_IRQConfig	24	static
+timer.c:430:6:TIM2_IRQHandler	16	static
+timer.c:445:6:TIM3_IRQHandler	16	static
+timer.c:462:6:TIM4_IRQHandler	16	static

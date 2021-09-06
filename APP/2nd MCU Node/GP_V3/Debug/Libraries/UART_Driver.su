@@ -1,0 +1,9 @@
+UART_Driver.c:13:6:USART_PeripheralControl	16	static
+UART_Driver.c:26:6:USART_PeriClockControl	16	static
+UART_Driver.c:90:9:USART_GetFlagStatus	16	static
+UART_Driver.c:99:6:USART_SetBaudRate	40	static
+UART_Driver.c:176:6:USART_Init	24	static
+UART_Driver.c:285:6:USART_SendData	32	static
+UART_Driver.c:346:6:USART_ReceiveData	32	static
+UART_Driver.c:422:9:USART_SendDataIT	32	static
+UART_Driver.c:459:9:USART_ReceiveDataIT	32	static
