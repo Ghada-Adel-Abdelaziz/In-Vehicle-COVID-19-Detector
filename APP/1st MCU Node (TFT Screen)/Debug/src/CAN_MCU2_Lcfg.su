@@ -1,0 +1,2 @@
+CAN_MCU2_Lcfg.c:25:6:CAN_TX_Callback	8	static
+CAN_MCU2_Lcfg.c:31:6:CAN_RX_Callback	16	static

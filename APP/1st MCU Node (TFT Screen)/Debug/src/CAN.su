@@ -1,0 +1,11 @@
+CAN.c:33:13:CAN_PeriClockControl	16	static
+CAN.c:41:6:CAN_init	16	static
+CAN.c:88:13:CAN_waitReady	4	static
+CAN.c:103:6:CAN_wrMsg	24	static
+CAN.c:165:6:CAN_rdMsg	16	static
+CAN.c:202:6:CAN_wrFilter	8	static
+CAN.c:245:13:CAN_vidReleaseMessage	4	static
+CAN.c:250:6:CAN_IRQConfig	24	static
+CAN.c:274:6:CAN1_TX_IRQHandler	8	static
+CAN.c:305:6:CAN1_RX0_IRQHandler	8	static
+CAN.c:340:5:CanTest	4	static

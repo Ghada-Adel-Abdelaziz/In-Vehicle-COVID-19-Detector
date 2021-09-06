@@ -1,0 +1,11 @@
+ADC.c:61:13:ADC_PeripheralControl	24	static
+ADC.c:70:13:ADC_PeriClockControl	16	static
+ADC.c:75:6:ADC_Init	32	static
+ADC.c:243:6:ADC_RegularChannelConfig	24	static
+ADC.c:294:6:ADC_SoftwareStartConv	24	static
+ADC.c:305:6:ADC_EOCOnEachRegularChannelCmd	24	static
+ADC.c:322:10:ADC_GetConversionValue	24	static
+ADC.c:331:10:ADC_getValue	24	static
+ADC.c:345:6:ADC_IntControl	24	static
+ADC.c:365:6:ADC_IRQConfig	24	static
+ADC.c:387:6:ADC_IRQHandler	16	static

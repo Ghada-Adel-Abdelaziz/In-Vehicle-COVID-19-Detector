@@ -1,0 +1,2 @@
+CAN_Manager.c:10:6:CanWriteBuzzer	16	static
+CAN_Manager.c:17:6:CanWriteHeater	24	static

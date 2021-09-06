@@ -1,0 +1,9 @@
+Mode_manager.c:58:6:TFT_button_pressed	4	static
+Mode_manager.c:63:6:CAM_SetMaskState	16	static
+Mode_manager.c:70:6:Jetson_Set_COVID_State	16	static
+Mode_manager.c:77:6:Jetson_Set_API_State	24	static
+Mode_manager.c:90:6:Set_Temp	16	static
+Mode_manager.c:96:6:Set_Seat_Sate	24	static
+Mode_manager.c:105:6:Set_Ignition_Sate	16	static
+Mode_manager.c:112:29:ReadSeats_State	4	static
+Mode_manager.c:129:6:Mode_Manager	8	static

@@ -1,0 +1,4 @@
+IR_Thermistor.c:34:6:mlx90614_Sensor_Init	4	static
+IR_Thermistor.c:39:6:Sensor_Data_Transfer_Complete_CallBack	16	static
+IR_Thermistor.c:85:21:mlx90614_Request_Reading	32	static
+IR_Thermistor.c:167:21:mlx90614_Request_Writing	32	static

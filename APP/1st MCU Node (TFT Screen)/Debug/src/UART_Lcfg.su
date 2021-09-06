@@ -1,0 +1,4 @@
+UART_Lcfg.c:23:6:LED1_ON	4	static
+UART_Lcfg.c:27:6:LED2_ON	4	static
+UART_Lcfg.c:32:6:LED1_ON2	4	static
+UART_Lcfg.c:37:6:UART_RX_Callback	8	static
